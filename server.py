@@ -105,6 +105,7 @@ Respond ONLY with a JSON object — no markdown, no extra text.
   "target_confidence": 0-100,
   "person_detected": true | false,
   "person_proximity": "none" | "far" | "close" | "very_close",
+  "person_position": "center" | "left" | "right" | "none",
   "obstacles": ["list of obstacles"],
   "direction_hint": "short spoken direction e.g. 'turn left slowly'",
   "scene_description": "one sentence describing what the camera sees",
@@ -112,7 +113,17 @@ Respond ONLY with a JSON object — no markdown, no extra text.
 }}
 
 Target: {target}
-Be concise — direction_hint will be spoken aloud."""
+
+IMPORTANT NOTES:
+- target_confidence should INCREASE as the target gets CLOSER to the camera (0 = not found, 100 = very close to camera)
+- When the target fills the frame or is very close, set confidence to 85-100
+- When barely visible or far away, set confidence to 20-50
+- Confidence reflects HOW CLOSE the target is to the camera lens
+- person_position should be "center" if person is in the middle 1/3 of the screen
+- person_position should be "left" if person is on the left side (left 1/3 of screen)
+- person_position should be "right" if person is on the right side (right 1/3 of screen)
+- person_position should be "none" if no person detected
+- Be concise — direction_hint will be spoken aloud."""
 
     try:
         r = requests.post(OLLAMA_URL, json={

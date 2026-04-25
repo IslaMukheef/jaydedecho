@@ -21,6 +21,7 @@
   --danger:  #ff3d3d;
   --success: #00e676;
   --dim:     #3a6070;
+  --heart:   #ff1744;
   --mono:    'Space Mono', monospace;
   --head:    'Syne', sans-serif;
   --r:       8px;
@@ -139,7 +140,271 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 }
 #start-btn:active { transform: scale(0.97); opacity: 0.88; }
 
-/* ════════════════════════════ GAME SCREEN ══════════════════════ */
+.difficulty-buttons {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.diff-btn {
+  flex: 1;
+  background: rgba(0,229,255,0.1);
+  border: 1px solid rgba(0,229,255,0.3);
+  color: var(--dim);
+  font-family: var(--head);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: var(--r);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  -webkit-appearance: none;
+  transition: all 0.2s;
+}
+
+.diff-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.diff-btn:active { transform: scale(0.96); }
+
+.quick-select {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.emoji-btn {
+  background: rgba(0,229,255,0.08);
+  border: 1px solid rgba(0,229,255,0.2);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  -webkit-appearance: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.emoji-btn:hover {
+  background: rgba(0,229,255,0.15);
+  border-color: rgba(0,229,255,0.4);
+}
+
+.emoji-btn:active {
+  transform: scale(0.94);
+  background: rgba(0,229,255,0.25);
+}
+
+/* ════════════════════════════ CONFETTI ════════════════════ */
+.confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* ════════════════════════════ COUNTDOWN ═══════════════════ */
+#countdown-overlay {
+  position: fixed; inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7);
+  z-index: 15;
+}
+
+#countdown-number {
+  font-family: var(--head);
+  font-size: 6rem;
+  font-weight: 800;
+  color: var(--accent);
+  text-shadow: 0 0 50px var(--accent);
+  animation: countdownPulse 1s ease-out;
+}
+
+@keyframes countdownPulse {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* ════════════════════════════ SCORE HUD ═══════════════════ */
+#score-display {
+  position: absolute;
+  top: calc(var(--sat) + 70px);
+  left: calc(var(--sal) + 14px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 5;
+}
+
+.score-label {
+  font-size: 0.55rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#current-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  font-family: var(--head);
+  letter-spacing: -0.02em;
+}
+
+#high-score-display {
+  position: absolute;
+  top: calc(var(--sat) + 70px);
+  right: calc(var(--sar) + 14px);
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 5;
+}
+
+.high-score-label {
+  font-size: 0.55rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#high-score-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--warn);
+  font-family: var(--head);
+  letter-spacing: -0.02em;
+}
+
+/* ════════════════════════════ PROGRESS RING ═════════════════ */
+#progress-ring {
+  position: absolute;
+  bottom: calc(var(--sab) + 160px);
+  right: calc(var(--sar) + 14px);
+  width: 50px;
+  height: 50px;
+  z-index: 5;
+}
+
+#progress-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-circle {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.progress-circle-bg {
+  stroke: rgba(0,229,255,0.1);
+}
+
+.progress-circle-fg {
+  stroke: var(--success);
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+/* ════════════════════════════ DISTANCE BAR ════════════════════ */
+#distance-bar-container {
+  position: absolute;
+  bottom: calc(var(--sab) + 160px);
+  left: calc(var(--sal) + 14px);
+  width: 120px;
+  z-index: 5;
+}
+
+.distance-label {
+  font-size: 0.55rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.distance-bar {
+  position: relative;
+  width: 100%;
+  height: 28px;
+  background: rgba(0,229,255,0.08);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.distance-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffb300, #ff3d3d);
+  transition: width 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: inset 0 0 10px rgba(255, 61, 61, 0.3);
+}
+
+.distance-fill.near-win {
+  background: linear-gradient(90deg, #00e676, #00e5ff);
+  box-shadow: inset 0 0 15px rgba(0, 230, 118, 0.5), 0 0 10px rgba(0, 230, 118, 0.3);
+}
+
+.distance-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+/* ════════════════════════════ STATUS BADGE ════════════════════ */
+#game-status-badge {
+  position: absolute;
+  top: calc(var(--sat) + 50%);
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  border: 2px solid var(--accent);
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-family: var(--head);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none;
+  z-index: 6;
+  text-transform: uppercase;
+  animation: badgeSlide 0.5s ease-out;
+}
+
+@keyframes badgeSlide {
+  0% { transform: translateX(-50%) translateY(-50%) scale(0.8); opacity: 0; }
+  100% { transform: translateX(-50%) translateY(-50%) scale(1); opacity: 1; }
+}
+
+
 #game-screen {
   position: fixed; inset: 0;
   display: none;
@@ -265,6 +530,68 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
   transition: background 0.2s;
 }
 #stop-btn:active { background: rgba(255,61,61,0.35); }
+
+#difficulty-display {
+  padding: 6px 12px;
+  background: rgba(255,179,0,0.12);
+  border: 1px solid rgba(255,179,0,0.3);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.2s;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+#difficulty-display:active {
+  background: rgba(255,179,0,0.25);
+  border-color: rgba(255,179,0,0.5);
+}
+
+#difficulty-menu {
+  position: fixed;
+  top: calc(var(--sat) + 60px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10,26,34,0.95);
+  border: 1px solid rgba(255,179,0,0.4);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 7;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.diff-menu-btn {
+  background: rgba(255,179,0,0.1);
+  border: 1px solid rgba(255,179,0,0.2);
+  color: var(--warn);
+  font-family: var(--head);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  -webkit-appearance: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.diff-menu-btn:hover {
+  background: rgba(255,179,0,0.2);
+  border-color: rgba(255,179,0,0.4);
+}
+
+.diff-menu-btn:active {
+  transform: scale(0.95);
+  background: rgba(255,179,0,0.3);
+}
 
 /* ── CAM STATUS (centre) ──────────────────────────────── */
 #cam-status {
@@ -459,7 +786,34 @@ canvas { display: none; }
              placeholder="e.g. red coffee mug, laptop, door…"
              autocomplete="off" autocorrect="off" spellcheck="false"
              onkeydown="if(event.key==='Enter'){this.blur();startGame();}">
+
+      <div class="quick-select">
+        <button class="emoji-btn" onclick="selectTarget('☕ Coffee')">☕ Coffee</button>
+        <button class="emoji-btn" onclick="selectTarget('💻 Laptop')">💻 Laptop</button>
+        <button class="emoji-btn" onclick="selectTarget('📱 Phone')">📱 Phone</button>
+        <button class="emoji-btn" onclick="selectTarget('🔑 Keys')">🔑 Keys</button>
+      </div>
     </div>
+
+    <div>
+      <span class="field-label">Difficulty</span>
+      <div class="difficulty-buttons">
+        <button class="diff-btn active" data-difficulty="easy" onclick="selectDifficulty('easy')">
+          EASY
+        </button>
+        <button class="diff-btn" data-difficulty="hard" onclick="selectDifficulty('hard')">
+          HARD
+        </button>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span class="field-label">High Score</span>
+        <div style="font-size: 1.2rem; color: var(--accent); margin-top: 4px;" id="setup-high-score">—</div>
+      </div>
+    </div>
+
     <button id="start-btn" onclick="startGame()">START GAME</button>
   </div>
 </div>
@@ -477,11 +831,68 @@ canvas { display: none; }
   <div class="corner bl"></div>
   <div class="corner br"></div>
 
+  <!-- Score display -->
+  <div id="score-display">
+    <div class="score-label">SCORE</div>
+    <div id="current-score">0</div>
+  </div>
+
+  <!-- High score display -->
+  <div id="high-score-display">
+    <div class="high-score-label">HIGH</div>
+    <div id="high-score-value">—</div>
+  </div>
+
+  <!-- Lives/Hearts display -->
+  <div id="lives-display">
+    <div class="lives-label">LIVES</div>
+    <div id="hearts-container">
+      <span class="heart">❤</span>
+      <span class="heart">❤</span>
+      <span class="heart">❤</span>
+    </div>
+  </div>
+
+  <!-- Progress ring -->
+  <div id="progress-ring">
+    <svg viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="24" class="progress-circle progress-circle-bg"></circle>
+      <circle cx="25" cy="25" r="24" class="progress-circle progress-circle-fg" id="progress-fg"></circle>
+    </svg>
+  </div>
+
+  <!-- Distance progress bar -->
+  <div id="distance-bar-container">
+    <div class="distance-label">TARGET DISTANCE</div>
+    <div class="distance-bar">
+      <div class="distance-fill" id="distance-fill"></div>
+      <div class="distance-value" id="distance-value">—</div>
+    </div>
+  </div>
+
+  <!-- Status badge -->
+  <div id="game-status-badge"></div>
+
+  <!-- Countdown overlay -->
+  <div id="countdown-overlay">
+    <div id="countdown-number">3</div>
+  </div>
+
   <!-- Top bar -->
   <div id="topbar">
     <div class="tb-logo">EchoFind</div>
+    <div id="difficulty-display" onclick="toggleDifficultyMenu()" style="cursor: pointer;">
+      <span id="difficulty-label" style="font-size: 0.75rem; color: var(--dim); letter-spacing: 0.1em;">DIFFICULTY</span>
+      <span id="difficulty-badge" style="font-size: 1rem; font-weight: 700; color: var(--warn);">EASY</span>
+    </div>
     <div id="target-badge">—</div>
     <button id="stop-btn" onclick="endGame('stopped')">STOP</button>
+  </div>
+
+  <!-- Difficulty menu -->
+  <div id="difficulty-menu" style="display: none;">
+    <button class="diff-menu-btn" onclick="setDifficultyInGame('easy')">☆ EASY</button>
+    <button class="diff-menu-btn" onclick="setDifficultyInGame('hard')">★ HARD</button>
   </div>
 
   <!-- Centre status -->
@@ -523,15 +934,80 @@ canvas { display: none; }
 <canvas id="snap-canvas"></canvas>
 
 <script>
+// ══ Audio System ═══════════════════════════════════════════════════
+class SimpleAudio {
+  constructor() {
+    this.audioContext = null;
+    try {
+      const ctx = window.AudioContext || window.webkitAudioContext;
+      this.audioContext = new ctx();
+    } catch(e) {
+      console.warn('Web Audio API not available');
+    }
+  }
+
+  playTone(freq, duration, type = 'sine', volume = 0.3) {
+    if (!this.audioContext) return;
+    try {
+      const now = this.audioContext.currentTime;
+      const osc = this.audioContext.createOscillator();
+      const gain = this.audioContext.createGain();
+      osc.connect(gain);
+      gain.connect(this.audioContext.destination);
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+      osc.start(now);
+      osc.stop(now + duration);
+    } catch(e) {
+      console.warn('Audio playback failed:', e.message);
+    }
+  }
+
+  // Positive chime (target close)
+  chime() { this.playTone(800, 0.1); this.playTone(1200, 0.15, 'sine', 0.2); }
+
+  // Win fanfare
+  fanfare() {
+    const notes = [[523, 0.1], [659, 0.1], [784, 0.2], [988, 0.3]];
+    notes.forEach((n, i) => setTimeout(() => this.playTone(n[0], n[1]), i * 150));
+  }
+
+  // Danger buzz
+  danger() { this.playTone(200, 0.05); setTimeout(() => this.playTone(200, 0.05), 100); }
+
+  // Sad wah-wah
+  loss() { this.playTone(400, 0.15); this.playTone(250, 0.15, 'sine', 0.2); }
+
+  // Ouch sound
+  ouch() { this.playTone(300, 0.08); this.playTone(200, 0.1, 'sine', 0.2); }
+}
+
+const audio = new SimpleAudio();
+
 // ══ State ══════════════════════════════════════════════════════
 const S = {
-  // Server is the same origin — no URL to configure
-  target:     '',
-  running:    false,
-  frames:     0,
-  t0:         null,
-  tick:       null,
-  stream:     null,
+  target:         '',
+  difficulty:     'easy',
+  running:        false,
+  frames:         0,
+  t0:             null,
+  tick:           null,
+  stream:         null,
+  score:          0,
+  highScore:      0,
+  targetFrames:   [],        // Track last N frames with target
+  dangerFrames:   0,         // Count frames with danger person
+  closureCount:   0,         // Times player was close to target
+  lastFrameHash:  '',        // For motion detection
+  framesToSkip:   0,         // Skip redundant frames
+  personCenterFrames: 0,     // Consecutive frames with person in center
+  personSideFrames: 0,       // Total frames with person on sides
+  personOnSide:   false,     // Currently person on side?
+  maxLives:       3,         // Maximum player lives (hearts)
+  lives:          3,         // Current remaining lives
+  lastPersonPos:  'none',    // Track last person position to avoid duplicate life loss
 };
 
 // ══ DOM ════════════════════════════════════════════════════════
@@ -545,6 +1021,52 @@ const canvas      = $('snap-canvas');
 // ══ Prevent iOS scroll bounce ══════════════════════════════════
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
+// ══ Difficulty Selection ═══════════════════════════════════════
+function selectDifficulty(level) {
+  S.difficulty = level;
+  document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-difficulty="${level}"]`).classList.add('active');
+}
+
+// ══ Target emoji selection ═════════════════════════════════════
+function selectTarget(target) {
+  $('target-input').value = target;
+  $('target-input').focus();
+}
+
+// ══ Toggle difficulty menu during gameplay ═════════════════════
+function toggleDifficultyMenu() {
+  const menu = $('difficulty-menu');
+  menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+}
+
+// ══ Set difficulty during gameplay ═════════════════════════════
+function setDifficultyInGame(level) {
+  S.difficulty = level;
+  $('difficulty-badge').textContent = level === 'easy' ? 'EASY' : 'HARD';
+  $('difficulty-badge').style.color = level === 'easy' ? 'var(--success)' : 'var(--danger)';
+  $('difficulty-menu').style.display = 'none';
+  speak(`Difficulty changed to ${level}`);
+  updateProgressRing();
+}
+
+// ══ Load high score ════════════════════════════════════════════
+function loadHighScore() {
+  const saved = localStorage.getItem('echofind_high_score');
+  S.highScore = saved ? parseInt(saved, 10) : 0;
+  $('setup-high-score').textContent = S.highScore > 0 ? S.highScore.toString() : '—';
+  $('high-score-value').textContent = S.highScore > 0 ? S.highScore.toString() : '—';
+}
+
+// ══ Save high score ════════════════════════════════════════════
+function saveHighScore() {
+  if (S.score > S.highScore) {
+    S.highScore = S.score;
+    localStorage.setItem('echofind_high_score', S.highScore.toString());
+    $('high-score-value').textContent = S.highScore.toString();
+  }
+}
+
 // ══ Start ══════════════════════════════════════════════════════
 async function startGame() {
   const target = $('target-input').value.trim();
@@ -555,7 +1077,7 @@ async function startGame() {
   try {
     S.stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: 'environment' },
-               width: { ideal: 1280 }, height: { ideal: 720 } },
+               width: { ideal: 960 }, height: { ideal: 540 } },  // Reduced from 1280x720 for faster encoding
       audio: false,
     });
     video.srcObject = S.stream;
@@ -570,11 +1092,26 @@ async function startGame() {
   gameScreen.style.display  = 'block';
   endScreen.style.display   = 'none';
 
+  // Show countdown overlay
+  await showCountdown(3);
+
   S.running = true;
   S.frames  = 0;
   S.t0      = Date.now();
+  S.score   = 0;
+  S.targetFrames = [];
+  S.dangerFrames = 0;
+  S.closureCount = 0;
 
   $('target-badge').textContent = '🎯 ' + target.toUpperCase();
+  $('current-score').textContent = '0';
+
+  // Set difficulty display
+  $('difficulty-badge').textContent = S.difficulty === 'easy' ? 'EASY' : 'HARD';
+  $('difficulty-badge').style.color = S.difficulty === 'easy' ? 'var(--success)' : 'var(--danger)';
+  $('difficulty-menu').style.display = 'none';
+
+  updateProgressRing();
   setLocked(false);
 
   speak(`Game started. Looking for a ${target}. Hold still when I say to.`);
@@ -589,22 +1126,84 @@ async function startGame() {
   loop();
 }
 
+// ══ Countdown animation ════════════════════════════════════════
+async function showCountdown(seconds) {
+  const overlay = $('countdown-overlay');
+  const num = $('countdown-number');
+  overlay.style.display = 'flex';
+
+  for (let i = seconds; i > 0; i--) {
+    num.textContent = i.toString();
+    await sleep(1000);
+  }
+
+  overlay.style.display = 'none';
+}
+
+// ══ Update progress ring ═══════════════════════════════════════
+function updateProgressRing() {
+  const circle = $('progress-fg');
+  if (!circle) return;
+
+  // Progress based on target confidence (new win condition)
+  // Win at 85% confidence
+  const latestConf = S.frames > 0 ? 50 : 0; // Placeholder, will be updated in applyAnalysis
+  let progress = 0;
+
+  // Get latest target confidence from the most recent detection
+  // This is a simplified approach - in real use, track the latest conf value
+  if (S.targetFrames.length > 0) {
+    progress = Math.min(100, (S.targetFrames.length / 5) * 20 + 30); // Base progress on consistent detections
+  }
+
+  const offset = 150 * (1 - progress / 100);
+  circle.style.strokeDashoffset = offset;
+}
+
+// ══ Show status badge ══════════════════════════════════════════
+function showStatusBadge(text, duration = 2000) {
+  const badge = $('game-status-badge');
+  badge.textContent = text;
+  badge.style.display = 'block';
+  setTimeout(() => { badge.style.display = 'none'; }, duration);
+}
+
 // ══ Sequential loop ════════════════════════════════════════════
 async function loop() {
   while (S.running) {
 
-    // Phase 1 — tell user to hold still, then snap
+    // If person on side, wait and show warning
+    if (S.personOnSide) {
+      setLocked(true);
+      setCamStatus('PERSON ON SIDE', 'var(--warn)');
+      setFeedback('⚠ Person detected on the side — Move away!', 'warn');
+      await sleep(500);
+      continue;
+    }
+
+    // Phase 1 — tell user to hold still, then snap (faster timing)
     setLocked(true);
     setCamStatus('HOLD STILL…', 'var(--accent)');
-    await sleep(400);
+    await sleep(300);  // Reduced from 400ms
     if (!S.running) break;
 
     const img = captureFrame();
-    if (!img) { await sleep(400); continue; }
+    if (!img) { await sleep(300); continue; }
+
+    // ── MOTION DETECTION: Skip redundant frames ──
+    const frameHash = getFrameHash(img);
+    if (!hasSignificantMotion(frameHash)) {
+      // No significant motion, skip this frame to save latency
+      setLocked(false);
+      setCamStatus('SCANNING…', 'var(--accent)');
+      await sleep(200);  // Quick check interval
+      continue;
+    }
+
     S.frames++;
     setCamStatus('AI THINKING…', 'var(--accent)');
 
-    // Phase 2 — await full server response (no next frame until done)
+    // Phase 2 — await server response (no next frame until done)
     const t = Date.now();
     let data;
     try {
@@ -620,7 +1219,7 @@ async function loop() {
       setFeedback('⚠ Connection error — retrying…', 'warn');
       speak('Connection error. Retrying.');
       setLocked(false);
-      await sleep(2000);
+      await sleep(1500);  // Reduced from 2000ms
       continue;
     }
 
@@ -635,12 +1234,12 @@ async function loop() {
       speak(data.error);
     }
 
-    // Phase 4 — unlock, let user move, wait for speech to finish
+    // Phase 4 — unlock, let user move (NO WAIT FOR SPEECH - it plays async now!)
     setLocked(false);
     setCamStatus('MOVE FREELY', 'var(--accent)');
-    await waitForSpeech();
-    if (!S.running) break;
-    await sleep(500);
+    // Removed: await waitForSpeech();
+    // This removes the 0-9 second delay!
+    await sleep(300);  // Just a quick breather before next frame
   }
 }
 
@@ -652,11 +1251,116 @@ function applyAnalysis(a) {
   const found      = !!a.target_found;
   const conf       = a.target_confidence || 0;
   const prox       = a.person_proximity || 'none';
-  const personClose = prox === 'close' || prox === 'very_close';
-  const personFar   = prox === 'far';
+  const personPos  = a.person_position || 'none';  // NEW: center, left, right, none
   const obs         = a.obstacles || [];
   const dir         = a.direction_hint || '';
   const scene       = a.scene_description || '';
+
+  // ══ ADVANCED PERSON DETECTION LOGIC ════════════════════════════
+
+  // Person on SIDE: Show warning and pause game
+  if (personPos === 'left' || personPos === 'right') {
+    S.personOnSide = true;
+    S.personSideFrames++;
+
+    const sideLabel = personPos === 'left' ? 'LEFT' : 'RIGHT';
+    setFeedback(`⚠ PERSON ON ${sideLabel} — Stay calm, move away!`, 'warn');
+    setCamStatus('MOVE AWAY', 'var(--warn)');
+    audio.danger();
+
+    // End game if person stays on side for 10+ frames
+    if (S.personSideFrames >= 10) {
+      speak('Person on side for too long. Game over. Stay safe.');
+      setTimeout(() => endGame('lose'), 2500);
+      return true;
+    }
+
+    return false;  // Don't process further, just pause
+  }
+
+  // Person NOT on side anymore
+  if (personPos === 'none' || personPos === 'center') {
+    if (S.personOnSide) {
+      // Person just moved away from side
+      S.personOnSide = false;
+      S.personSideFrames = 0;  // Reset counter
+      speak('Person moved away. Continue looking for the target.');
+    }
+  }
+
+  // Person in CENTER: High danger!
+  if (personPos === 'center') {
+    S.personCenterFrames++;
+
+    const frames_left = 3 - S.personCenterFrames;
+    setFeedback(`🚨 PERSON IN CENTER! (${frames_left} frames to go)`, 'danger');
+    setCamStatus('DANGER', 'var(--danger)');
+    audio.ouch();
+
+    // End game if person in center for 3 frames
+    if (S.personCenterFrames >= 3) {
+      speak('Person directly in front. Game over. Stay safe.');
+      setTimeout(() => endGame('lose'), 2500);
+      return true;
+    }
+
+    return false;  // Person in center, don't continue game logic
+  }
+
+  // No person detected - reset counters and continue normally
+  if (personPos === 'none') {
+    S.personCenterFrames = 0;
+    S.personOnSide = false;
+    S.personSideFrames = 0;
+  }
+
+  // ══ NORMAL GAME LOGIC (No dangerous person) ════════════════════
+
+  // Track target frames (last 5 frames)
+  S.targetFrames.push(found && conf >= 50);
+  if (S.targetFrames.length > 5) S.targetFrames.shift();
+
+  // Update distance bar (0-100 based on confidence)
+  const distPercent = Math.min(100, conf);
+  const distFill = $('distance-fill');
+  const distValue = $('distance-value');
+
+  if (found && conf > 0) {
+    distFill.style.width = distPercent + '%';
+
+    // Determine distance label
+    let distLabel = '—';
+    if (conf < 20) distLabel = 'VERY FAR';
+    else if (conf < 40) distLabel = 'FAR';
+    else if (conf < 60) distLabel = 'MEDIUM';
+    else if (conf < 80) distLabel = 'CLOSE';
+    else distLabel = 'VERY CLOSE';
+
+    distValue.textContent = distLabel;
+
+    // Change color to green when getting very close
+    if (conf >= 80) {
+      distFill.classList.add('near-win');
+    } else {
+      distFill.classList.remove('near-win');
+    }
+  } else {
+    distFill.style.width = '0%';
+    distValue.textContent = '—';
+    distFill.classList.remove('near-win');
+  }
+
+  // Update score
+  if (found && conf >= 50) {
+    S.score += 5;
+    S.closureCount++;
+  }
+  if (found && conf >= 80) {
+    S.score += 15;
+    audio.chime();
+    showStatusBadge('VERY CLOSE!', 1000);
+  }
+  $('current-score').textContent = S.score.toString();
 
   // Scene text
   $('scene-desc').textContent = scene;
@@ -666,9 +1370,15 @@ function applyAnalysis(a) {
     found ? (conf >= 70 ? 'ind-ok' : 'ind-warn') : '',
     found ? `TARGET: ${conf}%` : 'TARGET: SEARCHING');
 
-  setInd('ind-person',
-    personClose ? 'ind-danger' : personFar ? 'ind-warn' : '',
-    a.person_detected ? `PERSON: ${prox.replace('_',' ').toUpperCase()}` : 'PEOPLE: CLEAR');
+  // Update person indicator with position info
+  let personText = 'PEOPLE: CLEAR';
+  let personClass = '';
+  if (a.person_detected) {
+    const posLabel = personPos === 'center' ? 'CENTER' : personPos === 'left' ? 'LEFT' : personPos === 'right' ? 'RIGHT' : 'unknown';
+    personText = `PERSON: ${prox.toUpperCase()} (${posLabel})`;
+    personClass = personPos === 'center' ? 'ind-danger' : 'ind-warn';
+  }
+  setInd('ind-person', personClass, personText);
 
   setInd('ind-obstacle',
     obs.length ? 'ind-warn' : '',
@@ -676,23 +1386,18 @@ function applyAnalysis(a) {
 
   // Urgency vignette
   const ring = $('urgency-ring');
-  ring.className = urgency === 'danger' ? 'danger' : urgency === 'warning' ? 'warn' : (found ? 'success' : '');
+  ring.className = urgency === 'danger' ? 'danger' : urgency === 'warning' ? 'warn' : (found && conf >= 70 ? 'success' : '');
 
-  // ── WIN
-  if (found && conf >= 70) {
-    setFeedback(`🎯 Found the ${S.target}!`, 'ok');
-    setCamStatus('TARGET FOUND!', 'var(--success)');
-    speak(`You found it! The ${S.target} is right in front of you. Well done!`);
+  // Update progress ring
+  updateProgressRing();
+
+  // ── NEW WIN CONDITION: Get target confidence to 85%+ (very close to camera) ──
+  if (found && conf >= 85) {
+    setFeedback(`🎯 Got it! Held the ${S.target} close to the camera!`, 'ok');
+    setCamStatus('TARGET CAPTURED!', 'var(--success)');
+    audio.fanfare();
+    speak(`Excellent! You successfully captured the ${S.target}. Well done!`);
     setTimeout(() => endGame('win'), 2500);
-    return true;
-  }
-
-  // ── LOSE
-  if (personClose) {
-    setFeedback('🚨 STOP — person directly ahead!', 'danger');
-    setCamStatus('DANGER', 'var(--danger)');
-    speak('Stop! Person directly in front of you. Game over.');
-    setTimeout(() => endGame('lose'), 2500);
     return true;
   }
 
@@ -701,12 +1406,12 @@ function applyAnalysis(a) {
   if (obs.length) {
     msg    = `⚠ Obstacle: ${obs[0]} — ${dir}`;
     speech = `Watch out, ${obs[0]} ahead. ${dir}`;
-  } else if (personFar) {
+  } else if (prox === 'far') {
     msg    = `👤 Person in distance — ${dir}`;
     speech = `Person in the distance. Proceed carefully. ${dir}`;
   } else if (found) {
-    msg    = `🔍 Target glimpsed (${conf}%) — ${dir}`;
-    speech = `I can see the ${S.target} at ${conf} percent. ${dir} to get closer.`;
+    msg    = `🔍 Bringing closer (${conf}%) — ${dir}`;
+    speech = `I see the ${S.target} at ${conf} percent. Move closer. ${dir}`;
   } else {
     msg    = dir ? `🔭 ${dir}` : '🔭 Keep scanning…';
     speech = dir ? `${dir}. Keep looking for the ${S.target}.`
@@ -721,14 +1426,63 @@ function applyAnalysis(a) {
   return false;
 }
 
+// ══ Confetti effect ════════════════════════════════════════════
+function createConfetti() {
+  const colors = ['#00e5ff', '#00e676', '#ffb300', '#ff3d3d'];
+  for (let i = 0; i < 50; i++) {
+    const conf = document.createElement('div');
+    conf.className = 'confetti';
+    conf.style.left = Math.random() * 100 + '%';
+    conf.style.top = '-10px';
+    conf.style.width = (Math.random() * 10 + 5) + 'px';
+    conf.style.height = (Math.random() * 10 + 5) + 'px';
+    conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+    conf.style.borderRadius = '50%';
+    conf.style.opacity = Math.random() * 0.7 + 0.3;
+    gameScreen.appendChild(conf);
+
+    const duration = Math.random() * 2000 + 2000;
+    const xDist = (Math.random() - 0.5) * 200;
+    const yDist = Math.random() * 500 + 300;
+
+    conf.animate([
+      { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${xDist}px, ${yDist}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+    ], {
+      duration: duration,
+      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    });
+
+    setTimeout(() => conf.remove(), duration);
+  }
+}
+
 // ══ Helpers ════════════════════════════════════════════════════
 function captureFrame() {
   if (!video.videoWidth) return null;
   canvas.width  = video.videoWidth;
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
-  // 0.55 quality keeps upload small while giving llava enough detail
   return canvas.toDataURL('image/jpeg', 0.55).split(',')[1];
+}
+
+// ══ Motion detection (simple hash-based) ════════════════════════
+function getFrameHash(b64img) {
+  // Quick hash of first/last 20 chars to detect major scene changes
+  if (!b64img) return '';
+  return b64img.substring(0, 20) + b64img.substring(b64img.length - 20);
+}
+
+function hasSignificantMotion(newHash) {
+  if (!S.lastFrameHash) return true;
+  if (S.framesToSkip > 0) { S.framesToSkip--; return false; }
+
+  // Compare hashes - if different, significant motion detected
+  if (newHash !== S.lastFrameHash) {
+    S.lastFrameHash = newHash;
+    return true;
+  }
+  return false;
 }
 
 function setLocked(on) {
@@ -750,6 +1504,38 @@ function setFeedback(text, level) {
                  : '#ffffff';
 }
 
+// Update the hearts UI to reflect remaining lives
+function updateHearts() {
+  const container = $('hearts-container');
+  if (!container) return;
+  container.innerHTML = '';
+  for (let i = 0; i < S.maxLives; i++) {
+    const span = document.createElement('span');
+    span.className = 'heart';
+    span.textContent = i < S.lives ? '❤' : '♡';
+    span.style.color = i < S.lives ? 'var(--heart)' : 'rgba(255,255,255,0.18)';
+    span.style.fontSize = '1.25rem';
+    span.style.marginRight = '6px';
+    container.appendChild(span);
+  }
+}
+
+// Decrement a life and end the game if none remain
+function loseLife(reason) {
+  if (S.lives <= 0) return;
+  S.lives--;
+  updateHearts();
+  // Different audio for center vs side
+  if (reason === 'center') audio.ouch(); else audio.danger();
+  setFeedback(reason === 'center' ? '🚨 Person too close! You lost a life.' : '⚠ Person detected! You lost a life.', 'danger');
+  if (S.lives <= 0) {
+    speak('All lives lost. Game over. Stay safe.');
+    setTimeout(() => endGame('lose'), 1200);
+  } else {
+    speak('You lost a life. Be careful.');
+  }
+}
+
 function setInd(id, cls, text) {
   const el = $(id);
   el.className = 'indicator' + (cls ? ' ' + cls : '');
@@ -758,23 +1544,11 @@ function setInd(id, cls, text) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-function waitForSpeech() {
-  return new Promise(res => {
-    if (!window.speechSynthesis?.speaking) { res(); return; }
-    const iv = setInterval(() => {
-      if (!window.speechSynthesis.speaking) { clearInterval(iv); res(); }
-    }, 120);
-    setTimeout(() => { clearInterval(iv); res(); }, 9000);
-  });
-}
-
 // Safari requires speech to be triggered from a user gesture first.
-// We call a silent utterance on the start button tap.
 let speechUnlocked = false;
 function speak(text) {
   if (!window.speechSynthesis) return;
   if (!speechUnlocked) {
-    // Unlock on first real call (which comes from user-gesture context via startGame)
     speechUnlocked = true;
   }
   window.speechSynthesis.cancel();
@@ -782,6 +1556,7 @@ function speak(text) {
   u.rate   = 1.08;
   u.pitch  = 1;
   u.volume = 1;
+  // Fire and forget - don't wait for speech to complete
   window.speechSynthesis.speak(u);
 }
 
@@ -793,22 +1568,27 @@ function endGame(reason) {
   S.stream?.getTracks().forEach(t => t.stop());
   S.stream = null;
 
+  saveHighScore();
+
   const secs = ((Date.now() - S.t0) / 1000).toFixed(1);
   let icon, title, msg;
 
   if (reason === 'win') {
     icon = '🎯'; title = 'YOU FOUND IT!';
-    msg  = `Located the ${S.target} in ${secs}s — ${S.frames} frames.`;
+    msg  = `Located the ${S.target} in ${secs}s — ${S.frames} frames. Score: ${S.score}`;
     $('end-title').style.color = 'var(--success)';
-    speak(`Congratulations! Found the ${S.target} in ${secs} seconds!`);
+    createConfetti();
+    audio.fanfare();
+    speak(`Congratulations! Found the ${S.target} in ${secs} seconds! Final score: ${S.score}`);
   } else if (reason === 'lose') {
     icon = '🚨'; title = 'GAME OVER';
-    msg  = 'A person got too close. Stay safe.';
+    msg  = `A person got too close. Final score: ${S.score}`;
     $('end-title').style.color = 'var(--danger)';
+    audio.loss();
     speak('Game over. Person too close. Stay safe.');
   } else {
     icon = '⏹'; title = 'STOPPED';
-    msg  = `${secs}s elapsed. ${S.frames} frames analysed.`;
+    msg  = `${secs}s elapsed. ${S.frames} frames analysed. Final score: ${S.score}`;
     $('end-title').style.color = 'var(--accent)';
   }
 
@@ -823,7 +1603,11 @@ function resetGame() {
   gameScreen.style.display  = 'none';
   setupScreen.style.display = 'flex';
   $('target-input').value   = '';
+  loadHighScore();
 }
+
+// Load high score on page load
+window.addEventListener('load', loadHighScore);
 </script>
 </body>
 </html>
