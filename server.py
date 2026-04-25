@@ -59,26 +59,26 @@ DIFFICULTY_RULES: dict[str, DifficultyRules] = {
     "easy": DifficultyRules(
         target_window=5,
         target_min_hits=2,
-        target_min_avg=0.28,
+        target_min_avg=0.18,
         target_min_frame_conf=0.12,
-        target_score_threshold=0.42,
-        person_window=3,
+        target_score_threshold=0.32,
+        person_window=5,
         person_min_hits=2,
-        person_min_avg=0.28,
+        person_min_avg=0.22,
         person_min_frame_conf=0.18,
-        person_score_threshold=0.35,
+        person_score_threshold=0.30,
     ),
     "hard": DifficultyRules(
         target_window=5,
         target_min_hits=2,
-        target_min_avg=0.32,
+        target_min_avg=0.22,
         target_min_frame_conf=0.15,
-        target_score_threshold=0.48,
-        person_window=3,
+        target_score_threshold=0.38,
+        person_window=5,
         person_min_hits=2,
-        person_min_avg=0.26,
+        person_min_avg=0.24,
         person_min_frame_conf=0.18,
-        person_score_threshold=0.32,
+        person_score_threshold=0.30,
     ),
 }
 
@@ -136,15 +136,17 @@ def get_rules(difficulty: str) -> DifficultyRules:
 
 
 class SessionBuffer:
-    def __init__(self, session_id: str):
+    def __init__(self, session_id: str, rules: DifficultyRules | None = None):
         self.session_id = session_id
-        self.target_frames: Deque[FrameResult] = deque(maxlen=5)
-        self.person_frames: Deque[FrameResult] = deque(maxlen=3)
+        r = rules or DIFFICULTY_RULES["easy"]
+        self.target_frames: Deque[FrameResult] = deque(maxlen=r.target_window)
+        self.person_frames: Deque[FrameResult] = deque(maxlen=r.person_window)
         self.last_update = time.time()
 
-    def reset(self) -> None:
-        self.target_frames.clear()
-        self.person_frames.clear()
+    def reset(self, rules: DifficultyRules | None = None) -> None:
+        r = rules or DIFFICULTY_RULES["easy"]
+        self.target_frames = deque(maxlen=r.target_window)
+        self.person_frames = deque(maxlen=r.person_window)
         self.last_update = time.time()
 
     def add(self, sample: FrameResult) -> None:
@@ -266,11 +268,13 @@ def health():
 def reset_session():
     data = request.get_json(force=True, silent=True) or {}
     session_id = str(data.get("session_id", "default")).strip() or "default"
+    difficulty = str(data.get("difficulty", "easy")).strip().lower() or "easy"
+    rules = get_rules(difficulty)
     with lock:
         if session_id in frame_buffers:
-            frame_buffers[session_id].reset()
+            frame_buffers[session_id].reset(rules)
         else:
-            frame_buffers[session_id] = SessionBuffer(session_id)
+            frame_buffers[session_id] = SessionBuffer(session_id, rules)
     return jsonify({"ok": True})
 
 
@@ -395,7 +399,7 @@ def analyse():
     with lock:
         buffer = frame_buffers.get(session_id)
         if buffer is None:
-            buffer = SessionBuffer(session_id)
+            buffer = SessionBuffer(session_id, rules)
             frame_buffers[session_id] = buffer
         buffer.add(sample)
         consensus = buffer.consensus(rules)
