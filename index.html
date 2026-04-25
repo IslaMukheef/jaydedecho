@@ -2,1772 +2,600 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- viewport-fit=cover fills iPhone notch/dynamic island area -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<!-- Safari/iPhone 15 optimizations -->
 <meta name="apple-mobile-web-app-title" content="Jayded Echo">
-<meta name="apple-itunes-app" content="app-id=0">
-<meta name="format-detection" content="telephone=no">
 <title>Jayded Echo</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg:      #0f172e;
-  --panel:   rgba(15,23,46,0.85);
-  --border:  rgba(79,195,247,0.2);
-  --accent:  #4fc3f7;
-  --primary: #ff6b6b;
-  --success: #51cf66;
-  --warn:    #ffd93d;
-  --danger:  #ff6b6b;
-  --heart:   #ff6b6b;
-  --mono:    'Space Mono', monospace;
-  --head:    'Syne', sans-serif;
-  --r:       12px;
-  /* safe areas for iPhone notch / home bar */
+:root{
+  --bg:#08111f;
+  --panel:rgba(10,18,32,.82);
+  --line:rgba(120,170,255,.22);
+  --accent:#78aaff;
+  --good:#4ce08f;
+  --warn:#ffcb66;
+  --bad:#ff6b6b;
+  --text:#edf4ff;
+  --muted:rgba(237,244,255,.66);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --head:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --r:18px;
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
 }
-
-html {
-  height: 100%;
-  /* prevent Safari rubber-band scroll */
-  overflow: hidden;
-  overscroll-behavior: none;
-  /* Safari iOS rendering optimization */
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-
-body {
-  height: 100%;
-  height: -webkit-fill-available;
-  background: var(--bg);
-  color: #fff;
-  font-family: var(--mono);
-  overflow: hidden;
-  overscroll-behavior: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-/* ════════════════════════════ SETUP SCREEN ═════════════════════ */
-#setup-screen {
-  position: fixed; inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  padding: calc(var(--sat) + 24px) calc(var(--sar) + 24px) calc(var(--sab) + 24px) calc(var(--sal) + 24px);
-  background: radial-gradient(ellipse at 50% 25%, #001f2d 0%, var(--bg) 65%);
-  z-index: 10;
-}
-
-.logo {
-  font-family: var(--head);
-  font-size: clamp(2.8rem, 10vw, 4.5rem);
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: -0.02em;
-  text-shadow: 0 4px 15px rgba(79,195,247,0.3);
-  line-height: 1;
-  animation: logoGlow 3s ease-in-out infinite;
-}
-@keyframes logoGlow {
-  0%, 100% { text-shadow: 0 4px 15px rgba(79,195,247,0.3); }
-  50% { text-shadow: 0 8px 25px rgba(79,195,247,0.5); }
-}
-.logo span { color: var(--primary); }
-
-.tagline {
-  font-size: 0.7rem;
-  color: var(--dim);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.card {
-  background: linear-gradient(135deg, rgba(15,23,46,0.95) 0%, rgba(30,45,80,0.95) 100%);
-  border: 2px solid rgba(79,195,247,0.3);
-  border-radius: 20px;
-  padding: 32px 28px;
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
-}
-
-.field-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--dim);
-  margin-bottom: 8px;
-  display: block;
-}
-
-input[type="text"] {
-  width: 100%;
-  background: rgba(0,0,0,0.4);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 1.05rem;
-  padding: 14px 16px;
-  outline: none;
-  -webkit-appearance: none;
-  transition: border-color 0.2s;
-}
-input[type="text"]:focus { border-color: var(--accent); }
-input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
-
-#start-btn {
-  background: linear-gradient(135deg, var(--accent) 0%, #42a5f5 100%);
-  color: var(--bg);
-  border: none;
-  border-radius: 12px;
-  font-family: var(--head);
-  font-size: 1.15rem;
-  font-weight: 700;
-  padding: 18px;
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  width: 100%;
-  -webkit-appearance: none;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  min-height: 56px;
-  box-shadow: 0 4px 15px rgba(79,195,247,0.3);
-  position: relative;
-  overflow: hidden;
-}
-#start-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79,195,247,0.5);
-}
-#start-btn:active {
-  transform: translateY(0);
-  opacity: 0.95;
-}
-
-.difficulty-buttons {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-
-.diff-btn {
-  flex: 1;
-  background: rgba(79,195,247,0.08);
-  border: 2px solid rgba(79,195,247,0.2);
-  color: var(--accent);
-  font-family: var(--head);
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  letter-spacing: 0.06em;
-  -webkit-appearance: none;
-  transition: all 0.2s;
-  text-transform: uppercase;
-}
-
-.diff-btn.active {
-  background: linear-gradient(135deg, var(--accent) 0%, #42a5f5 100%);
-  border-color: var(--accent);
-  color: var(--bg);
-  box-shadow: 0 4px 15px rgba(79,195,247,0.3);
-}
-
-.diff-btn:active {
-  transform: scale(0.96);
-}
-
-.quick-select {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.emoji-btn {
-  background: linear-gradient(135deg, rgba(79,195,247,0.1) 0%, rgba(255,107,107,0.05) 100%);
-  border: 2px solid rgba(79,195,247,0.2);
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 12px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  -webkit-appearance: none;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  white-space: nowrap;
-}
-
-.emoji-btn:hover {
-  background: linear-gradient(135deg, rgba(79,195,247,0.2) 0%, rgba(255,107,107,0.1) 100%);
-  border-color: rgba(79,195,247,0.4);
-  transform: translateY(-2px);
-}
-
-.emoji-btn:active {
-  transform: translateY(0) scale(0.95);
-}
-
-/* ════════════════════════════ CONFETTI ════════════════════ */
-.confetti {
-  position: fixed;
-  pointer-events: none;
-  z-index: 25;
-}
-
-/* ════════════════════════════ COUNTDOWN ═══════════════════ */
-#countdown-overlay {
-  position: fixed; inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.7);
-  z-index: 15;
-}
-
-#countdown-number {
-  font-family: var(--head);
-  font-size: 6rem;
-  font-weight: 800;
-  color: var(--accent);
-  text-shadow: 0 0 50px var(--accent);
-  animation: countdownPulse 1s ease-out;
-}
-
-@keyframes countdownPulse {
-  0% { transform: scale(0.3); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: scale(1); opacity: 0; }
-}
-
-/* ════════════════════════════ SCORE HUD ═══════════════════ */
-#score-display {
-  position: absolute;
-  top: calc(var(--sat) + 16px);
-  left: calc(var(--sal) + 16px);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 5;
-  background: rgba(15,23,46,0.7);
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 2px solid rgba(79,195,247,0.2);
-  backdrop-filter: blur(6px);
-}
-
-.score-label {
-  font-size: 0.6rem;
-  color: rgba(255,255,255,0.6);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-#current-score {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--accent);
-  font-family: var(--head);
-  letter-spacing: -0.02em;
-}
-
-#high-score-display {
-  position: absolute;
-  top: calc(var(--sat) + 16px);
-  right: calc(var(--sar) + 16px);
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 5;
-  background: rgba(15,23,46,0.7);
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 2px solid rgba(81,207,102,0.2);
-  backdrop-filter: blur(6px);
-}
-
-.high-score-label {
-  font-size: 0.6rem;
-  color: rgba(255,255,255,0.6);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-#high-score-value {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--success);
-  font-family: var(--head);
-  letter-spacing: -0.02em;
-}
-
-/* ════════════════════════════ LIVES DISPLAY ═════════════════════ */
-#lives-display {
-  position: absolute;
-  top: calc(var(--sat) + 16px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  z-index: 5;
-  background: rgba(15,23,46,0.7);
-  padding: 12px 20px;
-  border-radius: 12px;
-  border: 2px solid rgba(255,107,107,0.2);
-  backdrop-filter: blur(6px);
-}
-
-.lives-label {
-  font-size: 0.6rem;
-  color: rgba(255,255,255,0.6);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-#hearts-container {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.heart {
-  font-size: 1.8rem;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  text-shadow: 0 2px 8px rgba(255,107,107,0.3);
-  filter: drop-shadow(0 0 4px rgba(255,107,107,0.2));
-}
-
-.heart.full {
-  color: var(--heart);
-  animation: heartBeat 0.3s ease;
-}
-
-.heart.empty {
-  color: rgba(255,255,255,0.15);
-  opacity: 0.6;
-}
-
-@keyframes heartBeat {
-  0% { transform: scale(0.8); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-#lives-display.critical #hearts-container {
-  animation: criticalPulse 0.5s ease infinite;
-}
-
-@keyframes criticalPulse {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255,107,107,0.4)); }
-  50% { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(255,107,107,0.7)); }
-}
-
-/* ════════════════════════════ PROGRESS RING ═════════════════ */
-#progress-ring {
-  position: absolute;
-  bottom: calc(var(--sab) + 160px);
-  right: calc(var(--sar) + 14px);
-  width: 50px;
-  height: 50px;
-  z-index: 5;
-}
-
-#progress-ring svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.progress-circle {
-  fill: none;
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.progress-circle-bg {
-  stroke: rgba(0,229,255,0.1);
-}
-
-.progress-circle-fg {
-  stroke: var(--success);
-  stroke-dasharray: 150;
-  stroke-dashoffset: 150;
-  transition: stroke-dashoffset 0.3s ease;
-}
-
-/* ════════════════════════════ DISTANCE BAR ════════════════════ */
-#distance-bar-container {
-  position: absolute;
-  bottom: calc(var(--sab) + 160px);
-  left: calc(var(--sal) + 14px);
-  width: 120px;
-  z-index: 5;
-}
-
-.distance-label {
-  font-size: 0.55rem;
-  color: var(--dim);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.distance-bar {
-  position: relative;
-  width: 100%;
-  height: 28px;
-  background: rgba(0,229,255,0.08);
-  border: 1px solid rgba(0,229,255,0.2);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.distance-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #ffb300, #ff3d3d);
-  transition: width 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: inset 0 0 10px rgba(255, 61, 61, 0.3);
-}
-
-.distance-fill.near-win {
-  background: linear-gradient(90deg, #00e676, #00e5ff);
-  box-shadow: inset 0 0 15px rgba(0, 230, 118, 0.5), 0 0 10px rgba(0, 230, 118, 0.3);
-}
-
-.distance-value {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.06em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
-}
-
-/* ════════════════════════════ STATUS BADGE ════════════════════ */
-#game-status-badge {
-  position: absolute;
-  top: calc(var(--sat) + 50%);
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  background: rgba(0,0,0,0.6);
-  border: 2px solid var(--accent);
-  border-radius: 20px;
-  padding: 12px 24px;
-  font-family: var(--head);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.1em;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: none;
-  z-index: 6;
-  text-transform: uppercase;
-  animation: badgeSlide 0.5s ease-out;
-}
-
-@keyframes badgeSlide {
-  0% { transform: translateX(-50%) translateY(-50%) scale(0.8); opacity: 0; }
-  100% { transform: translateX(-50%) translateY(-50%) scale(1); opacity: 1; }
-}
-
-
-#game-screen {
-  position: fixed; inset: 0;
-  display: none;
-}
-
-/* Camera fills the ENTIRE screen — it IS the background */
-#camera {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-  /* NOT dimmed — user needs to see where they are pointing */
-}
-
-/* Dark gradient at top and bottom for HUD legibility */
-#game-screen::before {
-  content: '';
-  position: absolute; inset: 0;
-  background:
-    linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 28%),
-    linear-gradient(to top,    rgba(0,0,0,0.80) 0%, transparent 45%);
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Scan-line texture */
-#game-screen::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(0,229,255,0.025) 3px,
-    rgba(0,229,255,0.025) 4px
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Moving scan line */
-#scan-line {
-  position: absolute; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
-  opacity: 0.5;
-  top: 0;
-  animation: scanMove 2.4s linear infinite;
-  z-index: 3;
-  pointer-events: none;
-}
-@keyframes scanMove { 0% { top: 0% } 100% { top: 100% } }
-
-/* Corner brackets */
-.corner {
-  position: absolute;
-  width: 24px; height: 24px;
-  border-color: rgba(0,229,255,0.7);
-  border-style: solid;
-  z-index: 4;
-  pointer-events: none;
-}
-.corner.tl { top: calc(var(--sat) + 60px); left: calc(var(--sal) + 14px); border-width: 2px 0 0 2px; }
-.corner.tr { top: calc(var(--sat) + 60px); right: calc(var(--sar) + 14px); border-width: 2px 2px 0 0; }
-.corner.bl { bottom: calc(var(--sab) + 160px); left: calc(var(--sal) + 14px); border-width: 0 0 2px 2px; }
-.corner.br { bottom: calc(var(--sab) + 160px); right: calc(var(--sar) + 14px); border-width: 0 2px 2px 0; }
-
-/* ── TOP BAR ──────────────────────────────────────────── */
-#topbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  padding: calc(var(--sat) + 10px) calc(var(--sar) + 14px) 10px calc(var(--sal) + 14px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  z-index: 5;
-}
-
-.tb-logo {
-  font-family: var(--head);
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 8px rgba(79,195,247,0.2);
-  white-space: nowrap;
-}
-
-#target-badge {
-  flex: 1;
-  text-align: center;
-  font-size: 0.65rem;
-  background: rgba(0,229,255,0.12);
-  border: 1px solid rgba(0,229,255,0.3);
-  color: var(--accent);
-  padding: 5px 12px;
-  border-radius: 20px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-#stop-btn {
-  background: rgba(255,61,61,0.15);
-  border: 1px solid rgba(255,61,61,0.5);
-  color: var(--danger);
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  padding: 7px 13px;
-  border-radius: var(--r);
-  cursor: pointer;
-  letter-spacing: 0.06em;
-  -webkit-appearance: none;
-  min-height: 36px;
-  min-width: 60px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: background 0.2s;
-}
-#stop-btn:active { background: rgba(255,61,61,0.35); }
-
-#difficulty-display {
-  padding: 6px 12px;
-  background: rgba(255,179,0,0.12);
-  border: 1px solid rgba(255,179,0,0.3);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  transition: all 0.2s;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-#difficulty-display:active {
-  background: rgba(255,179,0,0.25);
-  border-color: rgba(255,179,0,0.5);
-}
-
-#difficulty-menu {
-  position: fixed;
-  top: calc(var(--sat) + 60px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(10,26,34,0.95);
-  border: 1px solid rgba(255,179,0,0.4);
-  border-radius: 12px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 7;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.diff-menu-btn {
-  background: rgba(255,179,0,0.1);
-  border: 1px solid rgba(255,179,0,0.2);
-  color: var(--warn);
-  font-family: var(--head);
-  font-size: 0.9rem;
-  font-weight: 700;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  letter-spacing: 0.06em;
-  -webkit-appearance: none;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.diff-menu-btn:hover {
-  background: rgba(255,179,0,0.2);
-  border-color: rgba(255,179,0,0.4);
-}
-
-.diff-menu-btn:active {
-  transform: scale(0.95);
-  background: rgba(255,179,0,0.3);
-}
-
-/* ── CAM STATUS (centre) ──────────────────────────────── */
-#cam-status {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--head);
-  font-size: clamp(1.1rem, 4.5vw, 1.8rem);
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: 0.06em;
-  text-align: center;
-  text-shadow: 0 0 30px currentColor, 0 2px 12px rgba(0,0,0,0.8);
-  z-index: 5;
-  pointer-events: none;
-  transition: color 0.25s;
-  padding: 0 20px;
-}
-
-/* ── LOCK BANNER ──────────────────────────────────────── */
-#lock-banner {
-  display: none;
-  position: absolute;
-  inset: 0;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 6;
-  background: rgba(0,0,0,0.35);
-  pointer-events: none;
-}
-#lock-banner .dots {
-  display: flex; gap: 8px;
-}
-#lock-banner .dot {
-  width: 9px; height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: blink 0.6s ease infinite alternate;
-}
-#lock-banner .dot:nth-child(2) { animation-delay: 0.2s; }
-#lock-banner .dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink { to { opacity: 0.15; transform: scale(0.7); } }
-#lock-banner .lock-label {
-  font-family: var(--head);
-  font-size: clamp(0.85rem, 3.5vw, 1.1rem);
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-shadow: 0 0 20px var(--accent);
-}
-
-/* ── BOTTOM HUD ───────────────────────────────────────── */
-#bottom-hud {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  padding: 16px calc(var(--sar) + 16px) calc(var(--sab) + 16px) calc(var(--sal) + 16px);
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Big feedback line */
-#feedback-msg {
-  font-family: var(--head);
-  font-size: clamp(1.1rem, 4.5vw, 1.5rem);
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.4;
-  min-height: 2.8em;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
-  transition: color 0.3s, text-shadow 0.3s;
-}
-
-/* Scene description */
-#scene-desc {
-  font-size: 0.75rem;
-  color: rgba(200,221,230,0.75);
-  line-height: 1.6;
-  min-height: 1.1em;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-}
-
-/* Indicator pills */
-#indicators {
-  display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-.indicator {
-  font-size: 0.58rem;
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  transition: all 0.3s;
-  white-space: nowrap;
-}
-.ind-ok     { border-color: var(--success); color: var(--success); background: rgba(0,230,118,0.1); }
-.ind-warn   { border-color: var(--warn);    color: var(--warn);    background: rgba(255,179,0,0.1); }
-.ind-danger { border-color: var(--danger);  color: var(--danger);  background: rgba(255,61,61,0.1); }
-
-/* Stats row */
-#stats-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.58rem;
-  color: rgba(255,255,255,0.25);
-  letter-spacing: 0.06em;
-}
-
-/* ── URGENCY VIGNETTE ─────────────────────────────────── */
-#urgency-ring {
-  position: absolute; inset: 0;
-  pointer-events: none;
-  z-index: 3;
-  border-radius: 0;
-  transition: box-shadow 0.3s, opacity 0.3s;
-  opacity: 0;
-}
-#urgency-ring.warn    { box-shadow: inset 0 0 60px 10px rgba(255,179,0,0.35);   opacity: 1; }
-#urgency-ring.danger  { box-shadow: inset 0 0 60px 10px rgba(255,61,61,0.45);   opacity: 1; animation: pulseD 0.45s ease infinite alternate; }
-#urgency-ring.success { box-shadow: inset 0 0 60px 10px rgba(0,230,118,0.3);    opacity: 1; }
-@keyframes pulseD { to { box-shadow: inset 0 0 80px 18px rgba(255,61,61,0.6); } }
-
-/* ════════════════════════════ END SCREEN ═══════════════════════ */
-#end-screen {
-  position: fixed; inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: calc(var(--sat) + 24px) calc(var(--sar) + 32px) calc(var(--sab) + 24px) calc(var(--sal) + 32px);
-  background: rgba(0,0,0,0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  z-index: 20;
-}
-#end-icon  { font-size: 3.5rem; }
-#end-title {
-  font-family: var(--head);
-  font-size: clamp(2rem, 9vw, 3.2rem);
-  font-weight: 800;
-  text-align: center;
-}
-#end-msg {
-  font-size: 0.82rem;
-  color: rgba(200,221,230,0.65);
-  text-align: center;
-  max-width: 320px;
-  line-height: 1.65;
-}
-
-/* Winning frame display */
-#end-frame-container {
-  display: none;
-  width: 100%;
-  max-width: 300px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 3px solid var(--success);
-  box-shadow: 0 0 20px rgba(81,207,102,0.4);
-  background: rgba(0,0,0,0.5);
-}
-
-#end-frame-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  max-height: 300px;
-  object-fit: cover;
-}
-
-.frame-label {
-  font-size: 0.65rem;
-  color: var(--success);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 8px;
-  text-align: center;
-  background: rgba(81,207,102,0.1);
-  border-top: 1px solid rgba(81,207,102,0.2);
-}
-#again-btn {
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  border-radius: var(--r);
-  font-family: var(--head);
-  font-size: 1rem;
-  font-weight: 700;
-  padding: 16px 40px;
-  cursor: pointer;
-  min-height: 54px;
-  -webkit-appearance: none;
-  transition: opacity 0.15s;
-}
-#again-btn:active { opacity: 0.8; }
-
-canvas { display: none; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:radial-gradient(circle at top,#11223d 0,#08111f 52%,#050913 100%);color:var(--text);font-family:var(--head)}
+button,input{font:inherit}
+body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+
+#setup,#game,#end{position:fixed;inset:0}
+#setup{display:flex;align-items:center;justify-content:center;padding:calc(var(--sat) + 20px) calc(var(--sar) + 18px) calc(var(--sab) + 20px) calc(var(--sal) + 18px);background:linear-gradient(180deg,rgba(8,17,31,.88),rgba(8,17,31,.98))}
+.card{width:min(100%,440px);padding:26px;border:1px solid var(--line);background:var(--panel);border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.45);backdrop-filter:blur(16px)}
+.brand{font-size:clamp(2.2rem,8vw,3.6rem);font-weight:900;letter-spacing:-.04em;line-height:1}
+.brand span{color:var(--accent)}
+.tag{margin-top:8px;color:var(--muted);font-size:.82rem;letter-spacing:.14em;text-transform:uppercase}
+.field{margin-top:18px}
+.label{display:block;margin-bottom:8px;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+input[type=text]{width:100%;padding:14px 15px;border-radius:14px;border:1px solid rgba(120,170,255,.25);background:rgba(0,0,0,.28);color:var(--text);outline:none}
+input[type=text]:focus{border-color:rgba(120,170,255,.55)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.pill,.mode,.start,.retry,.stop{
+  border:1px solid rgba(120,170,255,.2);background:rgba(120,170,255,.08);color:var(--text);
+  border-radius:14px;padding:12px 12px;cursor:pointer;transition:.15s transform,.15s opacity,.15s background,.15s border-color
+}
+.pill:hover,.mode:hover,.start:hover,.retry:hover,.stop:hover{transform:translateY(-1px)}
+.mode.active{background:rgba(76,224,143,.14);border-color:rgba(76,224,143,.38);color:var(--good)}
+.pill{font-size:.9rem}
+.row{display:flex;gap:10px;align-items:center}
+.start{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--accent),#9bc0ff);color:#07101d;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.small{margin-top:14px;color:var(--muted);font-size:.8rem;line-height:1.5}
+
+#game{display:none}
+#cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+#overlay{position:absolute;inset:0;pointer-events:none}
+#overlay::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.55),transparent 25%),linear-gradient(to top,rgba(0,0,0,.68),transparent 38%)}
+#reticle{position:absolute;left:50%;top:50%;width:130px;height:130px;transform:translate(-50%,-50%);border:1px solid rgba(120,170,255,.2);border-radius:50%;box-shadow:0 0 0 9999px rgba(0,0,0,.03)}
+#reticle::before,#reticle::after{content:"";position:absolute;left:50%;top:50%;background:rgba(120,170,255,.78);transform:translate(-50%,-50%)}
+#reticle::before{width:58px;height:2px}
+#reticle::after{width:2px;height:58px}
+#hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:calc(var(--sat) + 12px) calc(var(--sar) + 12px) calc(var(--sab) + 12px) calc(var(--sal) + 12px)}
+.topbar{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.badge,.panel{background:rgba(10,18,32,.72);border:1px solid var(--line);backdrop-filter:blur(12px);border-radius:16px}
+.badge{padding:10px 12px;min-width:0}
+.title-mini{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.value{font-family:var(--mono);font-weight:800;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw}
+.value.good{color:var(--good)}.value.warn{color:var(--warn)}.value.bad{color:var(--bad)}
+.lives{display:flex;gap:6px;align-items:center}
+.heart{font-size:1.35rem;line-height:1}
+.heart.off{opacity:.22}
+.bottom{display:flex;flex-direction:column;gap:10px}
+.feedback{padding:14px 16px;border-radius:18px;background:rgba(10,18,32,.78);border:1px solid var(--line);font-size:1.05rem;font-weight:800;letter-spacing:-.01em;min-height:52px;display:flex;align-items:center}
+.scene{padding:10px 16px;border-radius:14px;background:rgba(10,18,32,.62);border:1px solid rgba(120,170,255,.12);color:var(--muted);font-size:.9rem;min-height:40px;display:flex;align-items:center}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill-state{padding:6px 10px;border-radius:999px;border:1px solid rgba(120,170,255,.18);background:rgba(120,170,255,.08);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(237,244,255,.84)}
+.pill-state.ok{border-color:rgba(76,224,143,.38);background:rgba(76,224,143,.12);color:var(--good)}
+.pill-state.warn{border-color:rgba(255,203,102,.38);background:rgba(255,203,102,.12);color:var(--warn)}
+.pill-state.bad{border-color:rgba(255,107,107,.38);background:rgba(255,107,107,.12);color:var(--bad)}
+.meta{display:flex;justify-content:space-between;gap:10px;color:rgba(237,244,255,.44);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase}
+
+#end{display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.86);backdrop-filter:blur(16px)}
+.end-card{width:min(100%,480px);padding:28px;border:1px solid var(--line);background:rgba(10,18,32,.9);border-radius:26px;box-shadow:0 24px 90px rgba(0,0,0,.5);text-align:center}
+.end-title{font-size:clamp(2rem,8vw,3.2rem);font-weight:900;letter-spacing:-.04em}
+.end-msg{margin-top:10px;color:var(--muted);line-height:1.6}
+.frame-wrap{display:none;margin:18px auto 0;width:min(100%,320px);border-radius:18px;overflow:hidden;border:2px solid var(--good)}
+.frame-wrap img{display:block;width:100%;height:auto;max-height:320px;object-fit:cover}
+.frame-label{padding:10px;background:rgba(76,224,143,.12);color:var(--good);border-top:1px solid rgba(76,224,143,.18);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
+.end-actions{display:flex;gap:10px;margin-top:18px}
+.retry,.stop{flex:1;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.stop{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.28)}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
-
-<!-- ══════════════════════ SETUP ══════════════════════════════ -->
-<div id="setup-screen">
-  <div class="logo">Jayded<span>Echo</span></div>
-  <div class="tagline">Navigate the world by AI &amp; sound</div>
-
+<div id="setup">
   <div class="card">
-    <div>
-      <span class="field-label">What are you looking for?</span>
-      <input type="text" id="target-input"
-             placeholder="e.g. red coffee mug, laptop, door…"
-             autocomplete="off" autocorrect="off" spellcheck="false"
-             onkeydown="if(event.key==='Enter'){this.blur();startGame();}">
+    <div class="brand">Jayded <span>Echo</span></div>
+    <div class="tag">Fast target hunt. Clean audio. No fluff.</div>
 
-      <div class="quick-select">
-        <button class="emoji-btn" onclick="selectTarget('☕ Coffee')">☕ Coffee</button>
-        <button class="emoji-btn" onclick="selectTarget('💻 Laptop')">💻 Laptop</button>
-        <button class="emoji-btn" onclick="selectTarget('📱 Phone')">📱 Phone</button>
-        <button class="emoji-btn" onclick="selectTarget('🔑 Keys')">🔑 Keys</button>
+    <div class="field">
+      <label class="label" for="target-input">Target</label>
+      <input id="target-input" type="text" placeholder="Coffee, laptop, phone, keys" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="grid">
+        <button class="pill" onclick="selectTarget('Coffee')">Coffee</button>
+        <button class="pill" onclick="selectTarget('Laptop')">Laptop</button>
+        <button class="pill" onclick="selectTarget('Phone')">Phone</button>
+        <button class="pill" onclick="selectTarget('Keys')">Keys</button>
       </div>
     </div>
 
-    <div>
-      <span class="field-label">Difficulty</span>
-      <div class="difficulty-buttons">
-        <button class="diff-btn active" data-difficulty="easy" onclick="selectDifficulty('easy')">
-          EASY
-        </button>
-        <button class="diff-btn" data-difficulty="hard" onclick="selectDifficulty('hard')">
-          HARD
-        </button>
+    <div class="field">
+      <label class="label">Difficulty</label>
+      <div class="row">
+        <button class="mode active" id="mode-easy" onclick="setDifficulty('easy')">Easy</button>
+        <button class="mode" id="mode-hard" onclick="setDifficulty('hard')">Hard</button>
       </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <span class="field-label">High Score</span>
-        <div style="font-size: 1.2rem; color: var(--accent); margin-top: 4px;" id="setup-high-score">—</div>
-      </div>
-    </div>
-
-    <button id="start-btn" onclick="startGame()">START GAME</button>
+    <button class="start" onclick="startGame()">Start</button>
+    <div class="small">Tip: keep the target in view. Person hits are loud.</div>
   </div>
 </div>
 
-<!-- ══════════════════════ GAME ════════════════════════════════ -->
-<div id="game-screen">
-  <video id="camera" autoplay playsinline muted webkit-playsinline></video>
+<div id="game">
+  <video id="cam" autoplay playsinline muted></video>
+  <div id="overlay"></div>
+  <div id="reticle"></div>
 
-  <!-- HUD layers -->
-  <div id="scan-line"></div>
-  <div id="urgency-ring"></div>
-
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
-
-  <!-- Score display -->
-  <div id="score-display">
-    <div class="score-label">SCORE</div>
-    <div id="current-score">0</div>
-  </div>
-
-  <!-- High score display -->
-  <div id="high-score-display">
-    <div class="high-score-label">HIGH</div>
-    <div id="high-score-value">—</div>
-  </div>
-
-  <!-- Lives/Hearts display -->
-  <div id="lives-display">
-    <div class="lives-label">LIVES</div>
-    <div id="hearts-container">
-      <span class="heart">❤</span>
-      <span class="heart">❤</span>
-      <span class="heart">❤</span>
+  <div id="hud">
+    <div class="topbar">
+      <div class="badge">
+        <div class="title-mini">Lives</div>
+        <div class="lives" id="lives"></div>
+      </div>
+      <div class="badge" style="max-width:42vw">
+        <div class="title-mini">Target</div>
+        <div class="value" id="target-tag">—</div>
+      </div>
+      <div class="badge">
+        <div class="title-mini">Mode</div>
+        <div class="value" id="difficulty-tag">Easy</div>
+      </div>
+      <button class="stop" onclick="endGame('stopped')">Stop</button>
     </div>
-  </div>
 
-  <!-- Progress ring -->
-  <div id="progress-ring">
-    <svg viewBox="0 0 50 50">
-      <circle cx="25" cy="25" r="24" class="progress-circle progress-circle-bg"></circle>
-      <circle cx="25" cy="25" r="24" class="progress-circle progress-circle-fg" id="progress-fg"></circle>
-    </svg>
-  </div>
-
-  <!-- Distance progress bar -->
-  <div id="distance-bar-container">
-    <div class="distance-label">TARGET DISTANCE</div>
-    <div class="distance-bar">
-      <div class="distance-fill" id="distance-fill"></div>
-      <div class="distance-value" id="distance-value">—</div>
-    </div>
-  </div>
-
-  <!-- Status badge -->
-  <div id="game-status-badge"></div>
-
-  <!-- Countdown overlay -->
-  <div id="countdown-overlay">
-    <div id="countdown-number">3</div>
-  </div>
-
-  <!-- Top bar -->
-  <div id="topbar">
-    <div class="tb-logo">Jayded Echo</div>
-    <div id="difficulty-display" onclick="toggleDifficultyMenu()" style="cursor: pointer;">
-      <span id="difficulty-label" style="font-size: 0.75rem; color: var(--dim); letter-spacing: 0.1em;">DIFFICULTY</span>
-      <span id="difficulty-badge" style="font-size: 1rem; font-weight: 700; color: var(--warn);">EASY</span>
-    </div>
-    <div id="target-badge">—</div>
-    <button id="stop-btn" onclick="endGame('stopped')">STOP</button>
-  </div>
-
-  <!-- Difficulty menu -->
-  <div id="difficulty-menu" style="display: none;">
-    <button class="diff-menu-btn" onclick="setDifficultyInGame('easy')">☆ EASY</button>
-    <button class="diff-menu-btn" onclick="setDifficultyInGame('hard')">★ HARD</button>
-  </div>
-
-  <!-- Centre status -->
-  <div id="cam-status">READY</div>
-
-  <!-- Thinking lock overlay -->
-  <div id="lock-banner">
-    <div class="dots">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>
-    <div class="lock-label">Hold still — AI thinking…</div>
-  </div>
-
-  <!-- Bottom HUD -->
-  <div id="bottom-hud">
-    <div id="feedback-msg">Starting…</div>
-    <div id="scene-desc"></div>
-    <div id="indicators">
-      <div class="indicator" id="ind-target">TARGET: ?</div>
-      <div class="indicator" id="ind-person">PEOPLE: CLEAR</div>
-      <div class="indicator" id="ind-obstacle">PATH: CLEAR</div>
-    </div>
-    <div id="stats-row">
-      <span id="stat-frames">Frames: 0</span>
-      <span id="stat-timer">0s</span>
-      <span id="stat-latency"></span>
+    <div class="bottom">
+      <div class="feedback" id="feedback">Ready.</div>
+      <div class="scene" id="scene">Waiting.</div>
+      <div class="pills">
+        <div class="pill-state" id="pill-target">TARGET: SEARCHING</div>
+        <div class="pill-state" id="pill-person">PEOPLE: CLEAR</div>
+      </div>
+      <div class="meta">
+        <span id="frames-stat">Frames 0</span>
+        <span id="latency-stat">0ms</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════ END ═════════════════════════════════ -->
-<div id="end-screen">
-  <div id="end-icon"></div>
-  <div id="end-title"></div>
-  <div id="end-msg"></div>
-
-  <!-- Winning frame display -->
-  <div id="end-frame-container">
-    <img id="end-frame-image" src="" alt="Winning moment">
-    <div class="frame-label">🎯 Your Capture</div>
+<div id="end">
+  <div class="end-card">
+    <div class="end-title" id="end-title">Game Over</div>
+    <div class="end-msg" id="end-msg"></div>
+    <div class="frame-wrap" id="frame-wrap">
+      <img id="frame-img" alt="Winning frame">
+      <div class="frame-label">Your capture</div>
+    </div>
+    <div class="end-actions">
+      <button class="retry" onclick="restart()">Play again</button>
+      <button class="stop" onclick="backToMenu()">Menu</button>
+    </div>
   </div>
-
-  <button id="again-btn" onclick="resetGame()">PLAY AGAIN</button>
 </div>
 
-<canvas id="snap-canvas"></canvas>
+<canvas id="snap" class="hidden"></canvas>
 
 <script>
-// ══ Audio System ═══════════════════════════════════════════════════
-class SimpleAudio {
-  constructor() {
-    this.audioContext = null;
-    try {
-      const ctx = window.AudioContext || window.webkitAudioContext;
-      this.audioContext = new ctx();
-    } catch(e) {
-      console.warn('Web Audio API not available');
-    }
-  }
+const $ = (id) => document.getElementById(id);
+const cam = $('cam');
+const snap = $('snap');
+const setup = $('setup');
+const game = $('game');
+const end = $('end');
 
-  playTone(freq, duration, type = 'sine', volume = 0.3) {
-    if (!this.audioContext) return;
-    try {
-      const now = this.audioContext.currentTime;
-      const osc = this.audioContext.createOscillator();
-      const gain = this.audioContext.createGain();
-      osc.connect(gain);
-      gain.connect(this.audioContext.destination);
-      osc.type = type;
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(volume, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
-      osc.start(now);
-      osc.stop(now + duration);
-    } catch(e) {
-      console.warn('Audio playback failed:', e.message);
-    }
-  }
+const PERSON_PENALTY_COOLDOWN = 1200;
+const WIN_THRESHOLD = 0.68;
+const CLOSE_THRESHOLD = 0.52;
 
-  // Positive chime (target close)
-  chime() { this.playTone(800, 0.1); this.playTone(1200, 0.15, 'sine', 0.2); }
-
-  // Win fanfare
-  fanfare() {
-    const notes = [[523, 0.1], [659, 0.1], [784, 0.2], [988, 0.3]];
-    notes.forEach((n, i) => setTimeout(() => this.playTone(n[0], n[1]), i * 150));
-  }
-
-  // Danger buzz
-  danger() { this.playTone(200, 0.05); setTimeout(() => this.playTone(200, 0.05), 100); }
-
-  // Sad wah-wah
-  loss() { this.playTone(400, 0.15); this.playTone(250, 0.15, 'sine', 0.2); }
-
-  // Ouch sound
-  ouch() { this.playTone(300, 0.08); this.playTone(200, 0.1, 'sine', 0.2); }
-}
-
-const audio = new SimpleAudio();
-
-// ══ State ══════════════════════════════════════════════════════
 const S = {
-  target:         '',
-  difficulty:     'easy',
-  running:        false,
-  frames:         0,
-  t0:             null,
-  tick:           null,
-  stream:         null,
-  score:          0,
-  highScore:      0,
-  targetFrames:   [],        // Track last N frames with target
-  dangerFrames:   0,         // Count frames with danger person
-  closureCount:   0,         // Times player was close to target
-  lastFrameHash:  '',        // For motion detection
-  framesToSkip:   0,         // Skip redundant frames
-  personCenterFrames: 0,     // Consecutive frames with person in center
-  personSideFrames: 0,       // Total frames with person on sides
-  personOnSide:   false,     // Currently person on side?
-  maxLives:       3,         // Maximum player lives (hearts)
-  lives:          3,         // Current remaining lives
-  lastPersonPos:  'none',    // Track last person position to avoid duplicate life loss
-  peopleSightings: 0,        // Count of times a person was detected (for scoring)
-  lastPersonDetectionTime: 0, // Timestamp of last person life loss (for cooldown)
-  personDetectionCooldown: 3000, // 3 seconds between life losses for person detection
-  lastWinFrame: null,        // Capture winning frame for end screen display
+  running: false,
+  target: '',
+  difficulty: 'easy',
+  sessionId: getSessionId(),
+  lives: 3,
+  maxLives: 3,
+  frames: 0,
+  stream: null,
+  t0: 0,
+  score: 0,
+  lastPersonPenaltyAt: 0,
+  lastWinAt: 0,
+  lastWinFrame: null,
+  lastFeedback: '',
+  lastSpeechAt: 0,
+  lastTargetState: '',
+  tick: null,
 };
 
-// ══ DOM ════════════════════════════════════════════════════════
-const $ = id => document.getElementById(id);
-const setupScreen = $('setup-screen');
-const gameScreen  = $('game-screen');
-const endScreen   = $('end-screen');
-const video       = $('camera');
-const canvas      = $('snap-canvas');
+function getSessionId() {
+  let sid = localStorage.getItem('jayded_echo_session_id');
+  if (!sid) {
+    sid = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'sess-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('jayded_echo_session_id', sid);
+  }
+  return sid;
+}
 
-// ══ Prevent iOS scroll bounce ══════════════════════════════════
-document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+function clamp01(v) {
+  v = Number(v);
+  return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0;
+}
 
-// ══ Difficulty Selection ═══════════════════════════════════════
-function selectDifficulty(level) {
+function toConfidence(v) {
+  v = Number(v);
+  if (!Number.isFinite(v)) return 0;
+  if (v > 1) v = v <= 100 ? v / 100 : 1;
+  return clamp01(v);
+}
+
+function shortWords(text, maxWords = 6) {
+  return String(text || '')
+    .replace(/[^\w\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, maxWords)
+    .join(' ');
+}
+
+function normalizeTarget(text) {
+  return String(text || '')
+    .replace(/[^\w\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getDisplayTarget() {
+  return normalizeTarget($('target-input').value);
+}
+
+function setDifficulty(level) {
   S.difficulty = level;
-  document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`[data-difficulty="${level}"]`).classList.add('active');
+  $('mode-easy').classList.toggle('active', level === 'easy');
+  $('mode-hard').classList.toggle('active', level === 'hard');
 }
 
-// ══ Target emoji selection ═════════════════════════════════════
-function selectTarget(target) {
-  $('target-input').value = target;
-  $('target-input').focus();
+function selectTarget(text) {
+  $('target-input').value = text;
 }
 
-// ══ Toggle difficulty menu during gameplay ═════════════════════
-function toggleDifficultyMenu() {
-  const menu = $('difficulty-menu');
-  menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+function playTone(freq, duration, type = 'sine', volume = 0.18) {
+  try {
+    const ctx = playTone.ctx || (playTone.ctx = new (window.AudioContext || window.webkitAudioContext)());
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  } catch (_) {}
 }
 
-// ══ Set difficulty during gameplay ═════════════════════════════
-function setDifficultyInGame(level) {
-  S.difficulty = level;
-  $('difficulty-badge').textContent = level === 'easy' ? 'EASY' : 'HARD';
-  $('difficulty-badge').style.color = level === 'easy' ? 'var(--success)' : 'var(--danger)';
-  $('difficulty-menu').style.display = 'none';
-  speak(`Difficulty changed to ${level}`);
-  updateProgressRing();
+const audio = {
+  near() {
+    playTone(740, 0.08, 'square', 0.08);
+    setTimeout(() => playTone(980, 0.08, 'square', 0.08), 60);
+  },
+  hit() {
+    playTone(180, 0.12, 'sawtooth', 0.18);
+    setTimeout(() => playTone(140, 0.16, 'sawtooth', 0.16), 80);
+  },
+  lowLife() {
+    playTone(260, 0.08, 'triangle', 0.1);
+    setTimeout(() => playTone(220, 0.10, 'triangle', 0.1), 70);
+  },
+  win() {
+    [[523,0.08],[659,0.08],[784,0.1],[988,0.14]].forEach((n, i) => setTimeout(() => playTone(n[0], n[1], 'triangle', 0.16), i * 110));
+  },
+  fail() {
+    playTone(300, 0.12, 'sawtooth', 0.16);
+    setTimeout(() => playTone(170, 0.18, 'sawtooth', 0.14), 90);
+  }
+};
+
+function speak(text, rate = 1.04, pitch = 1.08) {
+  if (!window.speechSynthesis) return;
+  const now = Date.now();
+  if (now - S.lastSpeechAt < 800) return;
+  S.lastSpeechAt = now;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.rate = rate;
+    u.pitch = pitch;
+    u.volume = 1;
+    window.speechSynthesis.speak(u);
+  } catch (_) {}
 }
 
-// ══ Load high score ════════════════════════════════════════════
-function loadHighScore() {
-  const saved = localStorage.getItem('echofind_high_score');
-  S.highScore = saved ? parseInt(saved, 10) : 0;
-  $('setup-high-score').textContent = S.highScore > 0 ? S.highScore.toString() : '—';
-  $('high-score-value').textContent = S.highScore > 0 ? S.highScore.toString() : '—';
-}
-
-// ══ Save high score ════════════════════════════════════════════
-function saveHighScore() {
-  if (S.score > S.highScore) {
-    S.highScore = S.score;
-    localStorage.setItem('echofind_high_score', S.highScore.toString());
-    $('high-score-value').textContent = S.highScore.toString();
+function setLives(n) {
+  const box = $('lives');
+  box.innerHTML = '';
+  for (let i = 0; i < S.maxLives; i++) {
+    const s = document.createElement('span');
+    s.className = 'heart' + (i < n ? '' : ' off');
+    s.textContent = '❤';
+    box.appendChild(s);
   }
 }
 
-// ══ Start ══════════════════════════════════════════════════════
-async function startGame() {
-  const target = $('target-input').value.trim();
-  if (!target) { speak('Please enter what you are looking for.'); return; }
-  S.target = target;
+function showFeedback(text, kind = 'normal') {
+  $('feedback').textContent = text;
+  $('feedback').style.color = kind === 'good' ? 'var(--good)' : kind === 'warn' ? 'var(--warn)' : kind === 'bad' ? 'var(--bad)' : 'var(--text)';
+  S.lastFeedback = text;
+}
 
-  // Camera — prefer rear on mobile, optimized for Safari/iPhone
+function showScene(text) {
+  $('scene').textContent = shortWords(text || 'Scanning now.', 6);
+}
+
+function setPill(id, state, text) {
+  const el = $(id);
+  el.className = 'pill-state' + (state ? ' ' + state : '');
+  el.textContent = text;
+}
+
+function updateStats() {
+  $('frames-stat').textContent = `Frames ${S.frames}`;
+  $('latency-stat').textContent = `${Math.max(0, Date.now() - S.t0)}ms`;
+}
+
+function captureFrame() {
+  if (!cam.videoWidth || !cam.videoHeight) return null;
+  snap.width = cam.videoWidth;
+  snap.height = cam.videoHeight;
+  const ctx = snap.getContext('2d');
+  ctx.drawImage(cam, 0, 0, snap.width, snap.height);
+  return snap.toDataURL('image/jpeg', 0.72);
+}
+
+async function startGame() {
+  const target = normalizeTarget(getDisplayTarget());
+  if (!target) {
+    showFeedback('Enter a target first.', 'warn');
+    speak('Enter a target first.');
+    return;
+  }
+  S.target = target;
+  S.sessionId = getSessionId();
+
+  try {
+    await fetch('/reset_session', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: S.sessionId })
+    });
+  } catch (_) {}
+
   try {
     S.stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: 'environment' },
-        width: { ideal: 720, max: 960 },      // Reduced for Safari compatibility
-        height: { ideal: 405, max: 540 },     // Reduced for Safari compatibility
-        frameRate: { ideal: 24, max: 30 }     // Control frame rate for Safari
+        width: { ideal: 960, max: 1280 },
+        height: { ideal: 540, max: 720 }
       },
-      audio: false,
+      audio: false
     });
-    video.srcObject = S.stream;
-    await new Promise(r => { video.onloadedmetadata = r; });
-    await video.play();
-  } catch(e) {
+    cam.srcObject = S.stream;
+    await cam.play();
+  } catch (e) {
     alert('Camera error: ' + e.message);
     return;
   }
 
-  setupScreen.style.display = 'none';
-  gameScreen.style.display  = 'block';
-  endScreen.style.display   = 'none';
-
-  // Show countdown overlay
-  await showCountdown(3);
+  setup.style.display = 'none';
+  end.style.display = 'none';
+  game.style.display = 'block';
 
   S.running = true;
-  S.frames  = 0;
-  S.t0      = Date.now();
-  S.score   = 0;
-  S.targetFrames = [];
-  S.dangerFrames = 0;
-  S.closureCount = 0;
+  S.frames = 0;
   S.lives = S.maxLives;
-  S.peopleSightings = 0;
-  S.lastPersonDetectionTime = 0;  // Reset cooldown
-  updateHearts();
+  S.score = 0;
+  S.lastPersonPenaltyAt = 0;
+  S.lastWinAt = 0;
+  S.lastWinFrame = null;
+  S.lastSpeechAt = 0;
+  S.t0 = Date.now();
+  setLives(S.lives);
+  $('target-tag').textContent = target.toUpperCase();
+  $('difficulty-tag').textContent = S.difficulty === 'easy' ? 'Easy' : 'Hard';
+  showFeedback('Scanning for target.', 'normal');
+  showScene('Waiting for first frame.');
+  setPill('pill-target', '', 'TARGET: SEARCHING');
+  setPill('pill-person', '', 'PEOPLE: CLEAR');
 
-  $('target-badge').textContent = '🎯 ' + target.toUpperCase();
-  $('current-score').textContent = '0';
+  speak(`Jayded Echo started. Looking for ${target}.`);
 
-  // Set difficulty display
-  $('difficulty-badge').textContent = S.difficulty === 'easy' ? 'EASY' : 'HARD';
-  $('difficulty-badge').style.color = S.difficulty === 'easy' ? 'var(--success)' : 'var(--danger)';
-  $('difficulty-menu').style.display = 'none';
-
-  updateProgressRing();
-  setLocked(false);
-
-  speak(`Game started. Looking for a ${target}. Hold still when I say to.`);
-
-  // Clock display
-  S.tick = setInterval(() => {
-    if (!S.running) return;
-    $('stat-timer').textContent   = Math.floor((Date.now()-S.t0)) + 'ms elapsed';
-    $('stat-frames').textContent  = 'Frames: ' + S.frames;
-  }, 500);
-
+  S.tick = setInterval(updateStats, 250);
   loop();
 }
 
-// ══ Countdown animation ════════════════════════════════════════
-async function showCountdown(seconds) {
-  const overlay = $('countdown-overlay');
-  const num = $('countdown-number');
-  overlay.style.display = 'flex';
-
-  for (let i = seconds; i > 0; i--) {
-    num.textContent = i.toString();
-    await sleep(1000);
-  }
-
-  overlay.style.display = 'none';
-}
-
-// ══ Update progress ring ═══════════════════════════════════════
-function updateProgressRing() {
-  const circle = $('progress-fg');
-  if (!circle) return;
-
-  // Progress based on target confidence (new win condition)
-  // Win at 85% confidence
-  const latestConf = S.frames > 0 ? 50 : 0; // Placeholder, will be updated in applyAnalysis
-  let progress = 0;
-
-  // Get latest target confidence from the most recent detection
-  // This is a simplified approach - in real use, track the latest conf value
-  if (S.targetFrames.length > 0) {
-    progress = Math.min(100, (S.targetFrames.length / 5) * 20 + 30); // Base progress on consistent detections
-  }
-
-  const offset = 150 * (1 - progress / 100);
-  circle.style.strokeDashoffset = offset;
-}
-
-// ══ Show status badge ══════════════════════════════════════════
-function showStatusBadge(text, duration = 2000) {
-  const badge = $('game-status-badge');
-  badge.textContent = text;
-  badge.style.display = 'block';
-  setTimeout(() => { badge.style.display = 'none'; }, duration);
-}
-
-// ══ Sequential loop ════════════════════════════════════════════
 async function loop() {
   while (S.running) {
+    const img = captureFrame();
+    if (!img) {
+      await sleep(120);
+      continue;
+    }
 
-    // If person on side, wait and show warning
-    if (S.personOnSide) {
-      setLocked(true);
-      setCamStatus('PERSON ON SIDE', 'var(--warn)');
-      setFeedback('⚠ Person detected on the side — Move away!', 'warn');
+    S.frames += 1;
+    updateStats();
+
+    const start = Date.now();
+    let data = null;
+    try {
+      const r = await fetch('/analyse', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          image: img,
+          target: S.target,
+          session_id: S.sessionId,
+          difficulty: S.difficulty
+        })
+      });
+      data = await r.json();
+      $('latency-stat').textContent = `${Date.now() - start}ms`;
+    } catch (e) {
+      showFeedback('Connection problem. Retrying.', 'warn');
       await sleep(500);
       continue;
     }
 
-    // Phase 1 — tell user to hold still, then snap (faster timing, Safari optimized)
-    setLocked(true);
-    setCamStatus('HOLD STILL…', 'var(--accent)');
-    await sleep(350);  // Slightly longer for Safari to prepare frame
     if (!S.running) break;
-
-    const img = captureFrame();
-    if (!img) { await sleep(300); continue; }
-
-    // ── MOTION DETECTION: Skip redundant frames ──
-    const frameHash = getFrameHash(img);
-    if (!hasSignificantMotion(frameHash)) {
-      // No significant motion, skip this frame to save latency
-      setLocked(false);
-      setCamStatus('SCANNING…', 'var(--accent)');
-      await sleep(200);  // Quick check interval
-      continue;
-    }
-
-    S.frames++;
-    setCamStatus('AI THINKING…', 'var(--accent)');
-
-    // Phase 2 — await server response (no next frame until done)
-    const t = Date.now();
-    let data;
-    try {
-      const r = await fetch('/analyse', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ image: img, target: S.target }),
-        signal:  AbortSignal.timeout(28000),
-      });
-      data = await r.json();
-      const latency = Date.now() - t;
-      $('stat-latency').textContent = latency + 'ms';
-      console.log('[DEBUG] Response:', data);  // Log for debugging
-    } catch(e) {
-      console.error('[ERROR] Fetch failed:', e);
-      setFeedback('⚠ Connection error — retrying…', 'warn');
-      speak('Connection error. Retrying.');
-      setLocked(false);
-      await sleep(1500);
-      continue;
-    }
-
-    if (!S.running) break;
-
-    // Phase 3 — apply result
-    if (data.ok) {
-      const done = applyAnalysis(data.analysis);
-      if (done) break;
-    } else {
-      setFeedback('Error: ' + data.error, 'warn');
-      speak(data.error);
-    }
-
-    // Phase 4 — unlock, let user move (NO WAIT FOR SPEECH - it plays async now!)
-    setLocked(false);
-    setCamStatus('MOVE FREELY', 'var(--accent)');
-    // Removed: await waitForSpeech();
-    // This removes the 0-9 second delay!
-    await sleep(300);  // Just a quick breather before next frame
+    if (applyAnalysis(data)) break;
+    await sleep(150);
   }
 }
 
-// ══ Apply AI result ════════════════════════════════════════════
-function applyAnalysis(a) {
-  if (!S.running) return true;
-
-  // Safely extract all fields with defaults
-  const urgency    = a.urgency || 'normal';
-  const found      = !!a.target_found;
-  const conf       = Math.max(0, Math.min(100, a.target_confidence || 0));
-  const prox       = a.person_proximity || 'none';
-  const personDetected = !!a.person_detected;
-  const personConf = Math.max(0, Math.min(100, a.person_confidence || 0));
-  const obs        = Array.isArray(a.obstacles) ? a.obstacles : [];
-  const dir        = (a.direction_hint || '').trim() || 'Keep moving forward';
-  const scene      = (a.scene_description || '').trim() || 'Analyzing scene...';
-
-  console.log(`[ANALYSIS] target=${found}(${conf}%), person=${personDetected}(${personConf}%)`);
-
-  // ════════════════════════════════════════════════════════════════
-  // PERSON DETECTION: Only lose life at 99%+ confidence to reduce false positives
-  // With 3-second cooldown before next life loss
-  // ════════════════════════════════════════════════════════════════
-
-  if (personDetected && personConf >= 70) {  // Lose heart at 70%+ confidence
-    const now = Date.now();
-    // Check if cooldown has passed since last person detection life loss
-    if (now - S.lastPersonDetectionTime >= S.personDetectionCooldown) {
-      S.peopleSightings++;
-      S.lastPersonDetectionTime = now;
-      loseLife('person');
-      if (S.lives <= 0) return true;  // Game over
-    }
-
-    // Show warning but don't process target logic yet
-    setFeedback('⚠ Person detected! Move away, 3s cooldown.', 'warn');
-    setCamStatus('PERSON DETECTED', 'var(--warn)');
-    audio.danger();
-    return false;  // Don't process further
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  // OBJECT DETECTION: Smart logic for seeing vs winning
-  // ════════════════════════════════════════════════════════════════
-
-  // Track target frames (last 5 frames with confidence)
-  S.targetFrames.push(found && conf >= 50);
-  if (S.targetFrames.length > 5) S.targetFrames.shift();
-
-  // Update distance bar (0-100 based on confidence)
-  const distPercent = Math.min(100, conf);
-  const distFill = $('distance-fill');
-  const distValue = $('distance-value');
-
-  if (found && conf > 0) {
-    distFill.style.width = distPercent + '%';
-
-    // Determine distance label based on confidence
-    let distLabel = '—';
-    if (conf < 20) distLabel = 'VERY FAR';
-    else if (conf < 40) distLabel = 'FAR';
-    else if (conf < 60) distLabel = 'MEDIUM';
-    else if (conf < 80) distLabel = 'CLOSE';
-    else distLabel = 'VERY CLOSE';
-
-    distValue.textContent = distLabel;
-
-    // Change color to green when getting very close (73%+)
-    if (conf >= 73) {
-      distFill.classList.add('near-win');
-    } else {
-      distFill.classList.remove('near-win');
-    }
-  } else {
-    distFill.style.width = '0%';
-    distValue.textContent = '—';
-    distFill.classList.remove('near-win');
-  }
-
-  // Update score based on confidence
-  if (found && conf >= 50) {
-    S.score += 5;
-    S.closureCount++;
-  }
-  if (found && conf >= 70) {
-    S.score += 15;
-    audio.chime();
-    showStatusBadge('GETTING CLOSE!', 1000);
-  }
-  $('current-score').textContent = S.score.toString();
-
-  // Scene text
-  $('scene-desc').textContent = scene;
-
-  // Indicators
-  setInd('ind-target',
-    found ? (conf >= 70 ? 'ind-ok' : 'ind-warn') : '',
-    found ? `TARGET: ${conf}%` : 'TARGET: SEARCHING');
-
-  setInd('ind-person', '', 'PEOPLE: CLEAR');
-
-  setInd('ind-obstacle',
-    obs.length ? 'ind-warn' : '',
-    obs.length ? 'OBSTACLE: ' + obs[0].toUpperCase() : 'PATH: CLEAR');
-
-  // Urgency vignette
-  const ring = $('urgency-ring');
-  ring.className = urgency === 'danger' ? 'danger' : urgency === 'warning' ? 'warn' : (found && conf >= 70 ? 'success' : '');
-
-  // Update progress ring
-  updateProgressRing();
-
-  // ════════════════════════════════════════════════════════════════
-  // WIN CONDITION: Object must be VERY CLOSE (85%+ confidence)
-  // This ensures user actually brings object near the camera
-  // ════════════════════════════════════════════════════════════════
-
-  if (found && conf >= 85) {
-    // Capture the winning frame
-    S.lastWinFrame = captureFrame();
-
-    setFeedback(`🎯 GOT IT! You brought the ${S.target} close to the camera!`, 'ok');
-    setCamStatus('TARGET CAPTURED!', 'var(--success)');
-    audio.fanfare();
-    speak(`Excellent! You successfully captured the ${S.target}. Well done!`);
-    setTimeout(() => endGame('win'), 2500);
-    return true;
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  // NORMAL GUIDANCE: Different messages based on object detection state
-  // ════════════════════════════════════════════════════════════════
-
-  let msg, speech;
-
-  if (obs.length) {
-    msg    = `⚠ Obstacle: ${obs[0]} — ${dir}`;
-    speech = `Watch out, ${obs[0]} ahead. ${dir}`;
-  } else if (found && conf >= 80) {
-    // Object is very close - encourage final push
-    msg    = `🔍 Almost there! Bring it closer (${conf}%) — ${dir}`;
-    speech = `Very close! Bring the ${S.target} even closer to the camera. ${dir}`;
-  } else if (found && conf >= 50) {
-    // Object is visible - encourage movement toward it
-    msg    = `👀 I can see it! Move closer (${conf}%) — ${dir}`;
-    speech = `I can see the ${S.target} at ${conf} percent. Get closer to it. ${dir}`;
-  } else if (found && conf > 0) {
-    // Object detected but far
-    msg    = `🔍 I see it in the distance (${conf}%) — ${dir}`;
-    speech = `I see the ${S.target} but it's far away. Move toward it. ${dir}`;
-  } else {
-    // No object detected
-    msg    = dir ? `🔭 ${dir}` : '🔭 Keep scanning…';
-    speech = dir ? `${dir}. Keep looking for the ${S.target}.`
-                 : `Keep scanning. Looking for the ${S.target}.`;
-  }
-
-  const col = urgency === 'danger' ? 'danger' : urgency === 'warning' ? 'warn' : 'normal';
-  setFeedback(msg, col);
-  setCamStatus(urgency === 'danger' ? 'DANGER' : urgency === 'warning' ? 'CAUTION' : 'SCANNING',
-               urgency === 'danger' ? 'var(--danger)' : urgency === 'warning' ? 'var(--warn)' : 'var(--accent)');
-  speak(speech);
-  return false;
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 
-// ══ Confetti effect ════════════════════════════════════════════
-function createConfetti() {
-  const colors = ['#00e5ff', '#00e676', '#ffb300', '#ff3d3d'];
-  for (let i = 0; i < 50; i++) {
-    const conf = document.createElement('div');
-    conf.className = 'confetti';
-    conf.style.left = Math.random() * 100 + '%';
-    conf.style.top = '-10px';
-    conf.style.width = (Math.random() * 10 + 5) + 'px';
-    conf.style.height = (Math.random() * 10 + 5) + 'px';
-    conf.style.background = colors[Math.floor(Math.random() * colors.length)];
-    conf.style.borderRadius = '50%';
-    conf.style.opacity = Math.random() * 0.7 + 0.3;
-    gameScreen.appendChild(conf);
-
-    const duration = Math.random() * 2000 + 2000;
-    const xDist = (Math.random() - 0.5) * 200;
-    const yDist = Math.random() * 500 + 300;
-
-    conf.animate([
-      { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
-      { transform: `translate(${xDist}px, ${yDist}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
-    ], {
-      duration: duration,
-      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-    });
-
-    setTimeout(() => conf.remove(), duration);
-  }
-}
-
-// ══ Helpers ════════════════════════════════════════════════════
-function captureFrame() {
-  if (!video.videoWidth) return null;
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
-
-  // Safari/iPhone 15 optimization: Use progressive JPEG at lower quality
-  // WebP not well-supported on all iOS Safari versions, so prioritize JPEG
-
-  // For iOS Safari, use JPEG with aggressive compression
-  // iPhone 15 has good hardware encoding, can handle lower quality
-  return canvas.toDataURL('image/jpeg', 0.40).split(',')[1];
-}
-
-// ══ Motion detection (simple hash-based) ════════════════════════
-function getFrameHash(b64img) {
-  // Quick hash of first/last 20 chars to detect major scene changes
-  if (!b64img) return '';
-  return b64img.substring(0, 20) + b64img.substring(b64img.length - 20);
-}
-
-function hasSignificantMotion(newHash) {
-  if (!S.lastFrameHash) return true;
-  if (S.framesToSkip > 0) { S.framesToSkip--; return false; }
-
-  // Compare hashes - if different, significant motion detected
-  if (newHash !== S.lastFrameHash) {
-    S.lastFrameHash = newHash;
-    return true;
-  }
-  return false;
-}
-
-function setLocked(on) {
-  $('lock-banner').style.display = on ? 'flex' : 'none';
-}
-
-function setCamStatus(text, color) {
-  const el = $('cam-status');
-  el.textContent  = text;
-  el.style.color  = color || 'var(--accent)';
-}
-
-function setFeedback(text, level) {
-  const el = $('feedback-msg');
-  el.textContent = text;
-  el.style.color = level === 'danger' ? 'var(--danger)'
-                 : level === 'warn'   ? 'var(--warn)'
-                 : level === 'ok'     ? 'var(--success)'
-                 : '#ffffff';
-}
-
-// Update the hearts UI to reflect remaining lives
-function updateHearts() {
-  const container = $('hearts-container');
-  const livesDisplay = $('lives-display');
-  if (!container || !livesDisplay) return;
-
-  container.innerHTML = '';
-  for (let i = 0; i < S.maxLives; i++) {
-    const span = document.createElement('span');
-    span.className = 'heart' + (i < S.lives ? ' full' : ' empty');
-    span.textContent = i < S.lives ? '❤' : '♡';
-    container.appendChild(span);
-  }
-
-  // Add critical state styling when on one heart
-  if (S.lives === 1) {
-    livesDisplay.classList.add('critical');
-  } else {
-    livesDisplay.classList.remove('critical');
-  }
-}
-
-// Decrement a life and end the game if none remain
-function loseLife(reason) {
-  if (S.lives <= 0) return;
-  S.lives--;
-  updateHearts();
-  audio.ouch();
-  setFeedback('Someone gonna mog you run away', 'danger');
-  if (S.lives <= 0) {
-    speak('bruh you lost all your lives. Game over.');
-    setTimeout(() => endGame('lose'), 1200);
-  } else {
-    speak(`made eye contact with a person. You have ${S.lives} life remaining.`);
-  }
-}
-
-function setInd(id, cls, text) {
-  const el = $(id);
-  el.className = 'indicator' + (cls ? ' ' + cls : '');
-  el.textContent = text;
-}
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-// Safari requires speech to be triggered from a user gesture first.
-let speechUnlocked = false;
-function speak(text) {
-  if (!window.speechSynthesis) return;
-  if (!speechUnlocked) {
-    speechUnlocked = true;
-  }
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate   = 1.08;
-  u.pitch  = 1;
-  u.volume = 1;
-  // Fire and forget - don't wait for speech to complete
-  window.speechSynthesis.speak(u);
-}
-
-// ══ End ════════════════════════════════════════════════════════
-function endGame(reason) {
+function endGame(reason = 'stopped') {
+  if (!S.running && reason !== 'stopped') return;
   S.running = false;
   clearInterval(S.tick);
-  window.speechSynthesis?.cancel();
-  S.stream?.getTracks().forEach(t => t.stop());
-  S.stream = null;
-
-  saveHighScore();
-
-  const secs = ((Date.now() - S.t0) / 1000).toFixed(1);
-  let icon, title, msg;
-
-  if (reason === 'win') {
-    icon = '🎯'; title = 'YOU FOUND IT!';
-    msg  = `Located the ${S.target} in ${secs}s — ${S.frames} frames. Score: ${S.score}`;
-    $('end-title').style.color = 'var(--success)';
-
-    // Show the winning frame if captured
-    if (S.lastWinFrame) {
-      const frameContainer = $('end-frame-container');
-      const frameImage = $('end-frame-image');
-      frameImage.src = 'data:image/jpeg;base64,' + S.lastWinFrame;
-      frameContainer.style.display = 'block';
-    }
-
-    createConfetti();
-    audio.fanfare();
-    speak(`Congratulations! Found the ${S.target} in ${secs} seconds! Final score: ${S.score}`);
-  } else if (reason === 'lose') {
-    icon = '🚨'; title = 'GAME OVER';
-    msg  = `A person got too close. Final score: ${S.score}`;
-    $('end-title').style.color = 'var(--danger)';
-    audio.loss();
-    // Hide frame container for loss
-    $('end-frame-container').style.display = 'none';
-    speak('Game over. Person too close. Stay safe.');
-  } else {
-    icon = '⏹'; title = 'STOPPED';
-    msg  = `${secs}s elapsed. ${S.frames} frames analysed. Final score: ${S.score}`;
-    $('end-title').style.color = 'var(--accent)';
-    // Hide frame container for stopped
-    $('end-frame-container').style.display = 'none';
+  S.tick = null;
+  try { window.speechSynthesis?.cancel(); } catch (_) {}
+  if (S.stream) {
+    S.stream.getTracks().forEach(t => t.stop());
+    S.stream = null;
   }
 
-  $('end-icon').textContent  = icon;
-  $('end-title').textContent = title;
-  $('end-msg').textContent   = msg;
-  endScreen.style.display    = 'flex';
+  const secs = ((Date.now() - S.t0) / 1000).toFixed(1);
+  $('frame-wrap').style.display = reason === 'win' && S.lastWinFrame ? 'block' : 'none';
+
+  if (reason === 'win') {
+    $('end-title').textContent = 'Target Found';
+    $('end-title').style.color = 'var(--good)';
+    $('end-msg').textContent = `Captured in ${secs}s across ${S.frames} frames.`;
+    $('frame-img').src = S.lastWinFrame;
+    audio.win();
+  } else if (reason === 'lose') {
+    $('end-title').textContent = 'Game Over';
+    $('end-title').style.color = 'var(--bad)';
+    $('end-msg').textContent = `You got hit. Final score ${S.score}.`;
+    audio.fail();
+  } else {
+    $('end-title').textContent = 'Stopped';
+    $('end-title').style.color = 'var(--accent)';
+    $('end-msg').textContent = `Stopped after ${secs}s and ${S.frames} frames.`;
+  }
+
+  end.style.display = 'flex';
 }
 
-function resetGame() {
-  endScreen.style.display   = 'none';
-  gameScreen.style.display  = 'none';
-  setupScreen.style.display = 'flex';
-  $('target-input').value   = '';
-  loadHighScore();
+function backToMenu() {
+  end.style.display = 'none';
+  game.style.display = 'none';
+  setup.style.display = 'flex';
+  $('target-input').value = '';
 }
 
-// Load high score on page load
-window.addEventListener('load', loadHighScore);
+function restart() {
+  end.style.display = 'none';
+  startGame();
+}
+
+function applyAnalysis(a) {
+  if (!S.running) return true;
+  if (!a || typeof a !== 'object') {
+    showFeedback('Bad analysis response.', 'warn');
+    return false;
+  }
+  if (a.error) {
+    showFeedback(shortWords(a.error, 6), 'warn');
+    return false;
+  }
+
+  const targetFound = !!a.target_found;
+  const targetConf = toConfidence(a.target_confidence);
+  const personFound = !!a.person_detected;
+  const personConf = toConfidence(a.person_confidence);
+  const scene = shortWords(a.scene_description || 'Scanning.', 6);
+
+  showScene(scene);
+
+  const now = Date.now();
+  if (personFound) {
+    setPill('pill-person', 'bad', `PEOPLE: ${Math.round(personConf * 100)}%`);
+    if (now - S.lastPersonPenaltyAt >= PERSON_PENALTY_COOLDOWN) {
+      S.lastPersonPenaltyAt = now;
+      S.lives -= 1;
+      setLives(S.lives);
+      audio.hit();
+      if (S.lives <= 1) {
+        showFeedback('Oof. One life left.', 'bad');
+        speak('Oof. One life left.');
+        audio.lowLife();
+      } else {
+        showFeedback(`You got hit. ${S.lives} left.`, 'warn');
+        speak(`You got hit. ${S.lives} left.`);
+      }
+      if (S.lives <= 0) {
+        endGame('lose');
+        return true;
+      }
+    } else {
+      showFeedback('Person nearby. Back up.', 'warn');
+    }
+    setPill('pill-target', targetFound ? 'warn' : '', targetFound ? `TARGET: ${Math.round(targetConf * 100)}%` : 'TARGET: SEARCHING');
+    return false;
+  } else {
+    setPill('pill-person', '', 'PEOPLE: CLEAR');
+  }
+
+  if (targetFound) {
+    const pct = Math.round(targetConf * 100);
+    setPill('pill-target', targetConf >= CLOSE_THRESHOLD ? 'ok' : 'warn', `TARGET: ${pct}%`);
+    if (targetConf >= CLOSE_THRESHOLD) {
+      showFeedback('Target visible. Close in.', 'good');
+      if (S.lastTargetState !== 'close') {
+        audio.near();
+        speak('Target locked. Keep pushing.');
+      }
+      S.lastTargetState = 'close';
+    } else {
+      showFeedback('Target seen. Keep moving.', 'normal');
+      if (S.lastTargetState !== 'seen') {
+        audio.near();
+      }
+      S.lastTargetState = 'seen';
+    }
+  } else {
+    setPill('pill-target', '', 'TARGET: SEARCHING');
+    showFeedback('Scanning for target.', 'normal');
+    S.lastTargetState = 'none';
+  }
+
+  if (targetFound && targetConf >= WIN_THRESHOLD && now - S.lastWinAt > 1200) {
+    S.lastWinAt = now;
+    S.lastWinFrame = captureFrame();
+    showFeedback('Target secured. Let’s go.', 'good');
+    speak('Let us go. Target secured.');
+    endGame('win');
+    return true;
+  }
+
+  return false;
+}
+
+window.addEventListener('load', () => {
+  setLives(S.maxLives);
+  $('difficulty-tag').textContent = 'Easy';
+});
 </script>
 </body>
 </html>
