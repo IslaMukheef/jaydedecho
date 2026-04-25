@@ -3,28 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <!-- viewport-fit=cover fills iPhone notch/dynamic island area -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>EchoFind</title>
+<!-- Safari/iPhone 15 optimizations -->
+<meta name="apple-mobile-web-app-title" content="Jayded Echo">
+<meta name="apple-itunes-app" content="app-id=0">
+<meta name="format-detection" content="telephone=no">
+<title>Jayded Echo</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:      #030a0e;
-  --panel:   rgba(3,10,14,0.82);
-  --border:  rgba(0,229,255,0.15);
-  --accent:  #00e5ff;
-  --warn:    #ffb300;
-  --danger:  #ff3d3d;
-  --success: #00e676;
-  --dim:     #3a6070;
-  --heart:   #ff1744;
+  --bg:      #0f172e;
+  --panel:   rgba(15,23,46,0.85);
+  --border:  rgba(79,195,247,0.2);
+  --accent:  #4fc3f7;
+  --primary: #ff6b6b;
+  --success: #51cf66;
+  --warn:    #ffd93d;
+  --danger:  #ff6b6b;
+  --heart:   #ff6b6b;
   --mono:    'Space Mono', monospace;
   --head:    'Syne', sans-serif;
-  --r:       8px;
+  --r:       12px;
   /* safe areas for iPhone notch / home bar */
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
@@ -37,6 +41,9 @@ html {
   /* prevent Safari rubber-band scroll */
   overflow: hidden;
   overscroll-behavior: none;
+  /* Safari iOS rendering optimization */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 body {
@@ -70,10 +77,15 @@ body {
   font-weight: 800;
   color: var(--accent);
   letter-spacing: -0.02em;
-  text-shadow: 0 0 50px #00e5ff55;
+  text-shadow: 0 4px 15px rgba(79,195,247,0.3);
   line-height: 1;
+  animation: logoGlow 3s ease-in-out infinite;
 }
-.logo span { color: #fff; }
+@keyframes logoGlow {
+  0%, 100% { text-shadow: 0 4px 15px rgba(79,195,247,0.3); }
+  50% { text-shadow: 0 8px 25px rgba(79,195,247,0.5); }
+}
+.logo span { color: var(--primary); }
 
 .tagline {
   font-size: 0.7rem;
@@ -83,17 +95,18 @@ body {
 }
 
 .card {
-  background: rgba(10,26,34,0.9);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px 24px;
+  background: linear-gradient(135deg, rgba(15,23,46,0.95) 0%, rgba(30,45,80,0.95) 100%);
+  border: 2px solid rgba(79,195,247,0.3);
+  border-radius: 20px;
+  padding: 32px 28px;
   width: 100%;
   max-width: 420px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .field-label {
@@ -122,23 +135,32 @@ input[type="text"]:focus { border-color: var(--accent); }
 input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 
 #start-btn {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, #42a5f5 100%);
   color: var(--bg);
   border: none;
-  border-radius: var(--r);
+  border-radius: 12px;
   font-family: var(--head);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
   padding: 18px;
   cursor: pointer;
   letter-spacing: 0.04em;
   width: 100%;
   -webkit-appearance: none;
-  transition: opacity 0.15s, transform 0.1s;
-  /* minimum 44px touch target */
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   min-height: 56px;
+  box-shadow: 0 4px 15px rgba(79,195,247,0.3);
+  position: relative;
+  overflow: hidden;
 }
-#start-btn:active { transform: scale(0.97); opacity: 0.88; }
+#start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79,195,247,0.5);
+}
+#start-btn:active {
+  transform: translateY(0);
+  opacity: 0.95;
+}
 
 .difficulty-buttons {
   display: flex;
@@ -148,27 +170,31 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 
 .diff-btn {
   flex: 1;
-  background: rgba(0,229,255,0.1);
-  border: 1px solid rgba(0,229,255,0.3);
-  color: var(--dim);
+  background: rgba(79,195,247,0.08);
+  border: 2px solid rgba(79,195,247,0.2);
+  color: var(--accent);
   font-family: var(--head);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  padding: 12px;
-  border-radius: var(--r);
+  padding: 14px;
+  border-radius: 10px;
   cursor: pointer;
   letter-spacing: 0.06em;
   -webkit-appearance: none;
   transition: all 0.2s;
+  text-transform: uppercase;
 }
 
 .diff-btn.active {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, #42a5f5 100%);
   border-color: var(--accent);
   color: var(--bg);
+  box-shadow: 0 4px 15px rgba(79,195,247,0.3);
 }
 
-.diff-btn:active { transform: scale(0.96); }
+.diff-btn:active {
+  transform: scale(0.96);
+}
 
 .quick-select {
   display: grid;
@@ -178,29 +204,29 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 }
 
 .emoji-btn {
-  background: rgba(0,229,255,0.08);
-  border: 1px solid rgba(0,229,255,0.2);
+  background: linear-gradient(135deg, rgba(79,195,247,0.1) 0%, rgba(255,107,107,0.05) 100%);
+  border: 2px solid rgba(79,195,247,0.2);
   color: var(--accent);
   font-family: var(--mono);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  padding: 10px 8px;
-  border-radius: 8px;
+  padding: 12px 10px;
+  border-radius: 10px;
   cursor: pointer;
   letter-spacing: 0.04em;
   -webkit-appearance: none;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   white-space: nowrap;
 }
 
 .emoji-btn:hover {
-  background: rgba(0,229,255,0.15);
-  border-color: rgba(0,229,255,0.4);
+  background: linear-gradient(135deg, rgba(79,195,247,0.2) 0%, rgba(255,107,107,0.1) 100%);
+  border-color: rgba(79,195,247,0.4);
+  transform: translateY(-2px);
 }
 
 .emoji-btn:active {
-  transform: scale(0.94);
-  background: rgba(0,229,255,0.25);
+  transform: translateY(0) scale(0.95);
 }
 
 /* ════════════════════════════ CONFETTI ════════════════════ */
@@ -238,23 +264,29 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 /* ════════════════════════════ SCORE HUD ═══════════════════ */
 #score-display {
   position: absolute;
-  top: calc(var(--sat) + 70px);
-  left: calc(var(--sal) + 14px);
+  top: calc(var(--sat) + 16px);
+  left: calc(var(--sal) + 16px);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   z-index: 5;
+  background: rgba(15,23,46,0.7);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid rgba(79,195,247,0.2);
+  backdrop-filter: blur(6px);
 }
 
 .score-label {
-  font-size: 0.55rem;
-  color: var(--dim);
-  letter-spacing: 0.1em;
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 #current-score {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: var(--accent);
   font-family: var(--head);
@@ -263,28 +295,98 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 
 #high-score-display {
   position: absolute;
-  top: calc(var(--sat) + 70px);
-  right: calc(var(--sar) + 14px);
+  top: calc(var(--sat) + 16px);
+  right: calc(var(--sar) + 16px);
   text-align: right;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   z-index: 5;
+  background: rgba(15,23,46,0.7);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid rgba(81,207,102,0.2);
+  backdrop-filter: blur(6px);
 }
 
 .high-score-label {
-  font-size: 0.55rem;
-  color: var(--dim);
-  letter-spacing: 0.1em;
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 #high-score-value {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  color: var(--warn);
+  color: var(--success);
   font-family: var(--head);
   letter-spacing: -0.02em;
+}
+
+/* ════════════════════════════ LIVES DISPLAY ═════════════════════ */
+#lives-display {
+  position: absolute;
+  top: calc(var(--sat) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+  background: rgba(15,23,46,0.7);
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 2px solid rgba(255,107,107,0.2);
+  backdrop-filter: blur(6px);
+}
+
+.lives-label {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+#hearts-container {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.heart {
+  font-size: 1.8rem;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-shadow: 0 2px 8px rgba(255,107,107,0.3);
+  filter: drop-shadow(0 0 4px rgba(255,107,107,0.2));
+}
+
+.heart.full {
+  color: var(--heart);
+  animation: heartBeat 0.3s ease;
+}
+
+.heart.empty {
+  color: rgba(255,255,255,0.15);
+  opacity: 0.6;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+#lives-display.critical #hearts-container {
+  animation: criticalPulse 0.5s ease infinite;
+}
+
+@keyframes criticalPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255,107,107,0.4)); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(255,107,107,0.7)); }
 }
 
 /* ════════════════════════════ PROGRESS RING ═════════════════ */
@@ -485,11 +587,11 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 
 .tb-logo {
   font-family: var(--head);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: var(--accent);
   letter-spacing: -0.01em;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 8px rgba(79,195,247,0.2);
   white-space: nowrap;
 }
 
@@ -661,20 +763,20 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
 /* Big feedback line */
 #feedback-msg {
   font-family: var(--head);
-  font-size: clamp(1.05rem, 4.5vw, 1.5rem);
+  font-size: clamp(1.1rem, 4.5vw, 1.5rem);
   font-weight: 700;
   color: #fff;
-  line-height: 1.3;
-  min-height: 2.6em;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.9);
-  transition: color 0.25s;
+  line-height: 1.4;
+  min-height: 2.8em;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+  transition: color 0.3s, text-shadow 0.3s;
 }
 
 /* Scene description */
 #scene-desc {
-  font-size: 0.72rem;
-  color: rgba(200,221,230,0.7);
-  line-height: 1.5;
+  font-size: 0.75rem;
+  color: rgba(200,221,230,0.75);
+  line-height: 1.6;
   min-height: 1.1em;
   text-shadow: 0 1px 4px rgba(0,0,0,0.8);
 }
@@ -776,7 +878,7 @@ canvas { display: none; }
 
 <!-- ══════════════════════ SETUP ══════════════════════════════ -->
 <div id="setup-screen">
-  <div class="logo">Echo<span>Find</span></div>
+  <div class="logo">Jayded<span>Echo</span></div>
   <div class="tagline">Navigate the world by AI &amp; sound</div>
 
   <div class="card">
@@ -820,7 +922,7 @@ canvas { display: none; }
 
 <!-- ══════════════════════ GAME ════════════════════════════════ -->
 <div id="game-screen">
-  <video id="camera" autoplay playsinline muted></video>
+  <video id="camera" autoplay playsinline muted webkit-playsinline></video>
 
   <!-- HUD layers -->
   <div id="scan-line"></div>
@@ -880,7 +982,7 @@ canvas { display: none; }
 
   <!-- Top bar -->
   <div id="topbar">
-    <div class="tb-logo">EchoFind</div>
+    <div class="tb-logo">Jayded Echo</div>
     <div id="difficulty-display" onclick="toggleDifficultyMenu()" style="cursor: pointer;">
       <span id="difficulty-label" style="font-size: 0.75rem; color: var(--dim); letter-spacing: 0.1em;">DIFFICULTY</span>
       <span id="difficulty-badge" style="font-size: 1rem; font-weight: 700; color: var(--warn);">EASY</span>
@@ -1008,6 +1110,9 @@ const S = {
   maxLives:       3,         // Maximum player lives (hearts)
   lives:          3,         // Current remaining lives
   lastPersonPos:  'none',    // Track last person position to avoid duplicate life loss
+  peopleSightings: 0,        // Count of times a person was detected (for scoring)
+  lastPersonDetectionTime: 0, // Timestamp of last person life loss (for cooldown)
+  personDetectionCooldown: 3000, // 3 seconds between life losses for person detection
 };
 
 // ══ DOM ════════════════════════════════════════════════════════
@@ -1073,11 +1178,15 @@ async function startGame() {
   if (!target) { speak('Please enter what you are looking for.'); return; }
   S.target = target;
 
-  // Camera — prefer rear on mobile
+  // Camera — prefer rear on mobile, optimized for Safari/iPhone
   try {
     S.stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' },
-               width: { ideal: 960 }, height: { ideal: 540 } },  // Reduced from 1280x720 for faster encoding
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 720, max: 960 },      // Reduced for Safari compatibility
+        height: { ideal: 405, max: 540 },     // Reduced for Safari compatibility
+        frameRate: { ideal: 24, max: 30 }     // Control frame rate for Safari
+      },
       audio: false,
     });
     video.srcObject = S.stream;
@@ -1102,6 +1211,10 @@ async function startGame() {
   S.targetFrames = [];
   S.dangerFrames = 0;
   S.closureCount = 0;
+  S.lives = S.maxLives;
+  S.peopleSightings = 0;
+  S.lastPersonDetectionTime = 0;  // Reset cooldown
+  updateHearts();
 
   $('target-badge').textContent = '🎯 ' + target.toUpperCase();
   $('current-score').textContent = '0';
@@ -1181,10 +1294,10 @@ async function loop() {
       continue;
     }
 
-    // Phase 1 — tell user to hold still, then snap (faster timing)
+    // Phase 1 — tell user to hold still, then snap (faster timing, Safari optimized)
     setLocked(true);
     setCamStatus('HOLD STILL…', 'var(--accent)');
-    await sleep(300);  // Reduced from 400ms
+    await sleep(350);  // Slightly longer for Safari to prepare frame
     if (!S.running) break;
 
     const img = captureFrame();
@@ -1214,12 +1327,15 @@ async function loop() {
         signal:  AbortSignal.timeout(28000),
       });
       data = await r.json();
-      $('stat-latency').textContent = (Date.now()-t) + 'ms';
+      const latency = Date.now() - t;
+      $('stat-latency').textContent = latency + 'ms';
+      console.log('[DEBUG] Response:', data);  // Log for debugging
     } catch(e) {
+      console.error('[ERROR] Fetch failed:', e);
       setFeedback('⚠ Connection error — retrying…', 'warn');
       speak('Connection error. Retrying.');
       setLocked(false);
-      await sleep(1500);  // Reduced from 2000ms
+      await sleep(1500);
       continue;
     }
 
@@ -1247,76 +1363,46 @@ async function loop() {
 function applyAnalysis(a) {
   if (!S.running) return true;
 
+  // Safely extract all fields with defaults
   const urgency    = a.urgency || 'normal';
   const found      = !!a.target_found;
-  const conf       = a.target_confidence || 0;
+  const conf       = Math.max(0, Math.min(100, a.target_confidence || 0));
   const prox       = a.person_proximity || 'none';
-  const personPos  = a.person_position || 'none';  // NEW: center, left, right, none
-  const obs         = a.obstacles || [];
-  const dir         = a.direction_hint || '';
-  const scene       = a.scene_description || '';
+  const personDetected = !!a.person_detected;
+  const personConf = Math.max(0, Math.min(100, a.person_confidence || 0));
+  const obs        = Array.isArray(a.obstacles) ? a.obstacles : [];
+  const dir        = (a.direction_hint || '').trim() || 'Keep moving forward';
+  const scene      = (a.scene_description || '').trim() || 'Analyzing scene...';
 
-  // ══ ADVANCED PERSON DETECTION LOGIC ════════════════════════════
+  console.log(`[ANALYSIS] target=${found}(${conf}%), person=${personDetected}(${personConf}%)`);
 
-  // Person on SIDE: Show warning and pause game
-  if (personPos === 'left' || personPos === 'right') {
-    S.personOnSide = true;
-    S.personSideFrames++;
+  // ════════════════════════════════════════════════════════════════
+  // PERSON DETECTION: Only lose life at 99%+ confidence to reduce false positives
+  // With 3-second cooldown before next life loss
+  // ════════════════════════════════════════════════════════════════
 
-    const sideLabel = personPos === 'left' ? 'LEFT' : 'RIGHT';
-    setFeedback(`⚠ PERSON ON ${sideLabel} — Stay calm, move away!`, 'warn');
-    setCamStatus('MOVE AWAY', 'var(--warn)');
+  if (personDetected && personConf >= 70) {  // Lose heart at 70%+ confidence
+    const now = Date.now();
+    // Check if cooldown has passed since last person detection life loss
+    if (now - S.lastPersonDetectionTime >= S.personDetectionCooldown) {
+      S.peopleSightings++;
+      S.lastPersonDetectionTime = now;
+      loseLife('person');
+      if (S.lives <= 0) return true;  // Game over
+    }
+
+    // Show warning but don't process target logic yet
+    setFeedback('⚠ Person detected! Move away, 3s cooldown.', 'warn');
+    setCamStatus('PERSON DETECTED', 'var(--warn)');
     audio.danger();
-
-    // End game if person stays on side for 10+ frames
-    if (S.personSideFrames >= 10) {
-      speak('Person on side for too long. Game over. Stay safe.');
-      setTimeout(() => endGame('lose'), 2500);
-      return true;
-    }
-
-    return false;  // Don't process further, just pause
+    return false;  // Don't process further
   }
 
-  // Person NOT on side anymore
-  if (personPos === 'none' || personPos === 'center') {
-    if (S.personOnSide) {
-      // Person just moved away from side
-      S.personOnSide = false;
-      S.personSideFrames = 0;  // Reset counter
-      speak('Person moved away. Continue looking for the target.');
-    }
-  }
+  // ════════════════════════════════════════════════════════════════
+  // OBJECT DETECTION: Smart logic for seeing vs winning
+  // ════════════════════════════════════════════════════════════════
 
-  // Person in CENTER: High danger!
-  if (personPos === 'center') {
-    S.personCenterFrames++;
-
-    const frames_left = 3 - S.personCenterFrames;
-    setFeedback(`🚨 PERSON IN CENTER! (${frames_left} frames to go)`, 'danger');
-    setCamStatus('DANGER', 'var(--danger)');
-    audio.ouch();
-
-    // End game if person in center for 3 frames
-    if (S.personCenterFrames >= 3) {
-      speak('Person directly in front. Game over. Stay safe.');
-      setTimeout(() => endGame('lose'), 2500);
-      return true;
-    }
-
-    return false;  // Person in center, don't continue game logic
-  }
-
-  // No person detected - reset counters and continue normally
-  if (personPos === 'none') {
-    S.personCenterFrames = 0;
-    S.personOnSide = false;
-    S.personSideFrames = 0;
-  }
-
-  // ══ NORMAL GAME LOGIC (No dangerous person) ════════════════════
-
-  // Track target frames (last 5 frames)
+  // Track target frames (last 5 frames with confidence)
   S.targetFrames.push(found && conf >= 50);
   if (S.targetFrames.length > 5) S.targetFrames.shift();
 
@@ -1328,7 +1414,7 @@ function applyAnalysis(a) {
   if (found && conf > 0) {
     distFill.style.width = distPercent + '%';
 
-    // Determine distance label
+    // Determine distance label based on confidence
     let distLabel = '—';
     if (conf < 20) distLabel = 'VERY FAR';
     else if (conf < 40) distLabel = 'FAR';
@@ -1338,7 +1424,7 @@ function applyAnalysis(a) {
 
     distValue.textContent = distLabel;
 
-    // Change color to green when getting very close
+    // Change color to green when getting very close (80%+)
     if (conf >= 80) {
       distFill.classList.add('near-win');
     } else {
@@ -1350,7 +1436,7 @@ function applyAnalysis(a) {
     distFill.classList.remove('near-win');
   }
 
-  // Update score
+  // Update score based on confidence
   if (found && conf >= 50) {
     S.score += 5;
     S.closureCount++;
@@ -1358,7 +1444,7 @@ function applyAnalysis(a) {
   if (found && conf >= 80) {
     S.score += 15;
     audio.chime();
-    showStatusBadge('VERY CLOSE!', 1000);
+    showStatusBadge('GETTING CLOSE!', 1000);
   }
   $('current-score').textContent = S.score.toString();
 
@@ -1370,15 +1456,7 @@ function applyAnalysis(a) {
     found ? (conf >= 70 ? 'ind-ok' : 'ind-warn') : '',
     found ? `TARGET: ${conf}%` : 'TARGET: SEARCHING');
 
-  // Update person indicator with position info
-  let personText = 'PEOPLE: CLEAR';
-  let personClass = '';
-  if (a.person_detected) {
-    const posLabel = personPos === 'center' ? 'CENTER' : personPos === 'left' ? 'LEFT' : personPos === 'right' ? 'RIGHT' : 'unknown';
-    personText = `PERSON: ${prox.toUpperCase()} (${posLabel})`;
-    personClass = personPos === 'center' ? 'ind-danger' : 'ind-warn';
-  }
-  setInd('ind-person', personClass, personText);
+  setInd('ind-person', '', 'PEOPLE: CLEAR');
 
   setInd('ind-obstacle',
     obs.length ? 'ind-warn' : '',
@@ -1391,9 +1469,13 @@ function applyAnalysis(a) {
   // Update progress ring
   updateProgressRing();
 
-  // ── NEW WIN CONDITION: Get target confidence to 85%+ (very close to camera) ──
+  // ════════════════════════════════════════════════════════════════
+  // WIN CONDITION: Object must be VERY CLOSE (85%+ confidence)
+  // This ensures user actually brings object near the camera
+  // ════════════════════════════════════════════════════════════════
+
   if (found && conf >= 85) {
-    setFeedback(`🎯 Got it! Held the ${S.target} close to the camera!`, 'ok');
+    setFeedback(`🎯 GOT IT! You brought the ${S.target} close to the camera!`, 'ok');
     setCamStatus('TARGET CAPTURED!', 'var(--success)');
     audio.fanfare();
     speak(`Excellent! You successfully captured the ${S.target}. Well done!`);
@@ -1401,18 +1483,29 @@ function applyAnalysis(a) {
     return true;
   }
 
-  // ── Normal guidance
+  // ════════════════════════════════════════════════════════════════
+  // NORMAL GUIDANCE: Different messages based on object detection state
+  // ════════════════════════════════════════════════════════════════
+
   let msg, speech;
+
   if (obs.length) {
     msg    = `⚠ Obstacle: ${obs[0]} — ${dir}`;
     speech = `Watch out, ${obs[0]} ahead. ${dir}`;
-  } else if (prox === 'far') {
-    msg    = `👤 Person in distance — ${dir}`;
-    speech = `Person in the distance. Proceed carefully. ${dir}`;
-  } else if (found) {
-    msg    = `🔍 Bringing closer (${conf}%) — ${dir}`;
-    speech = `I see the ${S.target} at ${conf} percent. Move closer. ${dir}`;
+  } else if (found && conf >= 80) {
+    // Object is very close - encourage final push
+    msg    = `🔍 Almost there! Bring it closer (${conf}%) — ${dir}`;
+    speech = `Very close! Bring the ${S.target} even closer to the camera. ${dir}`;
+  } else if (found && conf >= 50) {
+    // Object is visible - encourage movement toward it
+    msg    = `👀 I can see it! Move closer (${conf}%) — ${dir}`;
+    speech = `I can see the ${S.target} at ${conf} percent. Get closer to it. ${dir}`;
+  } else if (found && conf > 0) {
+    // Object detected but far
+    msg    = `🔍 I see it in the distance (${conf}%) — ${dir}`;
+    speech = `I see the ${S.target} but it's far away. Move toward it. ${dir}`;
   } else {
+    // No object detected
     msg    = dir ? `🔭 ${dir}` : '🔭 Keep scanning…';
     speech = dir ? `${dir}. Keep looking for the ${S.target}.`
                  : `Keep scanning. Looking for the ${S.target}.`;
@@ -1462,8 +1555,15 @@ function captureFrame() {
   if (!video.videoWidth) return null;
   canvas.width  = video.videoWidth;
   canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  return canvas.toDataURL('image/jpeg', 0.55).split(',')[1];
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  // Safari/iPhone 15 optimization: Use progressive JPEG at lower quality
+  // WebP not well-supported on all iOS Safari versions, so prioritize JPEG
+
+  // For iOS Safari, use JPEG with aggressive compression
+  // iPhone 15 has good hardware encoding, can handle lower quality
+  return canvas.toDataURL('image/jpeg', 0.40).split(',')[1];
 }
 
 // ══ Motion detection (simple hash-based) ════════════════════════
@@ -1507,16 +1607,22 @@ function setFeedback(text, level) {
 // Update the hearts UI to reflect remaining lives
 function updateHearts() {
   const container = $('hearts-container');
-  if (!container) return;
+  const livesDisplay = $('lives-display');
+  if (!container || !livesDisplay) return;
+
   container.innerHTML = '';
   for (let i = 0; i < S.maxLives; i++) {
     const span = document.createElement('span');
-    span.className = 'heart';
+    span.className = 'heart' + (i < S.lives ? ' full' : ' empty');
     span.textContent = i < S.lives ? '❤' : '♡';
-    span.style.color = i < S.lives ? 'var(--heart)' : 'rgba(255,255,255,0.18)';
-    span.style.fontSize = '1.25rem';
-    span.style.marginRight = '6px';
     container.appendChild(span);
+  }
+
+  // Add critical state styling when on one heart
+  if (S.lives === 1) {
+    livesDisplay.classList.add('critical');
+  } else {
+    livesDisplay.classList.remove('critical');
   }
 }
 
@@ -1525,14 +1631,13 @@ function loseLife(reason) {
   if (S.lives <= 0) return;
   S.lives--;
   updateHearts();
-  // Different audio for center vs side
-  if (reason === 'center') audio.ouch(); else audio.danger();
-  setFeedback(reason === 'center' ? '🚨 Person too close! You lost a life.' : '⚠ Person detected! You lost a life.', 'danger');
+  audio.ouch();
+  setFeedback('🚨 Person in frame! You lost a life. Be safe.', 'danger');
   if (S.lives <= 0) {
     speak('All lives lost. Game over. Stay safe.');
     setTimeout(() => endGame('lose'), 1200);
   } else {
-    speak('You lost a life. Be careful.');
+    speak(`You lost a life. ${S.lives} life remaining. Be careful.`);
   }
 }
 
