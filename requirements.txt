@@ -1,0 +1,23 @@
+# Core Vision & Camera
+opencv-python>=4.8.0          # Camera capture and image processing
+google-generativeai>=0.3.0    # Gemini API
+
+# Audio & Voice
+pyttsx3>=2.90                 # System text-to-speech (free, offline)
+
+# Maps & Routing & Web
+flask>=2.3.0                  # Web app framework
+geopy>=2.3.0                  # Address geocoding
+openrouteservice>=2.3.3       # Route calculation
+
+# Utilities
+python-dotenv>=1.0.0          # Environment variables
+requests>=2.31.0              # HTTP requests
+numpy>=1.24.0                 # Array processing
+
+# Development (optional)
+pytest>=7.4.0                 # Testing
+pytest-cov>=4.1.0             # Coverage reporting
+black>=23.0.0                 # Code formatting
+
+
