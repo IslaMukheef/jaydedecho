@@ -855,6 +855,37 @@ input[type="text"]::placeholder { color: var(--dim); font-size: 0.85rem; }
   max-width: 320px;
   line-height: 1.65;
 }
+
+/* Winning frame display */
+#end-frame-container {
+  display: none;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid var(--success);
+  box-shadow: 0 0 20px rgba(81,207,102,0.4);
+  background: rgba(0,0,0,0.5);
+}
+
+#end-frame-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 300px;
+  object-fit: cover;
+}
+
+.frame-label {
+  font-size: 0.65rem;
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 8px;
+  text-align: center;
+  background: rgba(81,207,102,0.1);
+  border-top: 1px solid rgba(81,207,102,0.2);
+}
 #again-btn {
   background: var(--accent);
   color: var(--bg);
@@ -1030,6 +1061,13 @@ canvas { display: none; }
   <div id="end-icon"></div>
   <div id="end-title"></div>
   <div id="end-msg"></div>
+
+  <!-- Winning frame display -->
+  <div id="end-frame-container">
+    <img id="end-frame-image" src="" alt="Winning moment">
+    <div class="frame-label">🎯 Your Capture</div>
+  </div>
+
   <button id="again-btn" onclick="resetGame()">PLAY AGAIN</button>
 </div>
 
@@ -1113,6 +1151,7 @@ const S = {
   peopleSightings: 0,        // Count of times a person was detected (for scoring)
   lastPersonDetectionTime: 0, // Timestamp of last person life loss (for cooldown)
   personDetectionCooldown: 3000, // 3 seconds between life losses for person detection
+  lastWinFrame: null,        // Capture winning frame for end screen display
 };
 
 // ══ DOM ════════════════════════════════════════════════════════
@@ -1424,8 +1463,8 @@ function applyAnalysis(a) {
 
     distValue.textContent = distLabel;
 
-    // Change color to green when getting very close (80%+)
-    if (conf >= 80) {
+    // Change color to green when getting very close (73%+)
+    if (conf >= 73) {
       distFill.classList.add('near-win');
     } else {
       distFill.classList.remove('near-win');
@@ -1441,7 +1480,7 @@ function applyAnalysis(a) {
     S.score += 5;
     S.closureCount++;
   }
-  if (found && conf >= 80) {
+  if (found && conf >= 70) {
     S.score += 15;
     audio.chime();
     showStatusBadge('GETTING CLOSE!', 1000);
@@ -1475,6 +1514,9 @@ function applyAnalysis(a) {
   // ════════════════════════════════════════════════════════════════
 
   if (found && conf >= 85) {
+    // Capture the winning frame
+    S.lastWinFrame = captureFrame();
+
     setFeedback(`🎯 GOT IT! You brought the ${S.target} close to the camera!`, 'ok');
     setCamStatus('TARGET CAPTURED!', 'var(--success)');
     audio.fanfare();
@@ -1632,12 +1674,12 @@ function loseLife(reason) {
   S.lives--;
   updateHearts();
   audio.ouch();
-  setFeedback('🚨 Person in frame! You lost a life. Be safe.', 'danger');
+  setFeedback('Someone gonna mog you run away', 'danger');
   if (S.lives <= 0) {
-    speak('All lives lost. Game over. Stay safe.');
+    speak('bruh you lost all your lives. Game over.');
     setTimeout(() => endGame('lose'), 1200);
   } else {
-    speak(`You lost a life. ${S.lives} life remaining. Be careful.`);
+    speak(`made eye contact with a person. You have ${S.lives} life remaining.`);
   }
 }
 
@@ -1682,6 +1724,15 @@ function endGame(reason) {
     icon = '🎯'; title = 'YOU FOUND IT!';
     msg  = `Located the ${S.target} in ${secs}s — ${S.frames} frames. Score: ${S.score}`;
     $('end-title').style.color = 'var(--success)';
+
+    // Show the winning frame if captured
+    if (S.lastWinFrame) {
+      const frameContainer = $('end-frame-container');
+      const frameImage = $('end-frame-image');
+      frameImage.src = 'data:image/jpeg;base64,' + S.lastWinFrame;
+      frameContainer.style.display = 'block';
+    }
+
     createConfetti();
     audio.fanfare();
     speak(`Congratulations! Found the ${S.target} in ${secs} seconds! Final score: ${S.score}`);
@@ -1690,11 +1741,15 @@ function endGame(reason) {
     msg  = `A person got too close. Final score: ${S.score}`;
     $('end-title').style.color = 'var(--danger)';
     audio.loss();
+    // Hide frame container for loss
+    $('end-frame-container').style.display = 'none';
     speak('Game over. Person too close. Stay safe.');
   } else {
     icon = '⏹'; title = 'STOPPED';
     msg  = `${secs}s elapsed. ${S.frames} frames analysed. Final score: ${S.score}`;
     $('end-title').style.color = 'var(--accent)';
+    // Hide frame container for stopped
+    $('end-frame-container').style.display = 'none';
   }
 
   $('end-icon').textContent  = icon;
