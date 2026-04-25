@@ -86,8 +86,10 @@ input[type=text]:focus{border-color:rgba(120,170,255,.55)}
 .end-title{font-size:clamp(2rem,8vw,3.2rem);font-weight:900;letter-spacing:-.04em}
 .end-msg{margin-top:10px;color:var(--muted);line-height:1.6}
 .frame-wrap{display:none;margin:18px auto 0;width:min(100%,320px);border-radius:18px;overflow:hidden;border:2px solid var(--good)}
+.frame-wrap.lose{border-color:var(--bad)}
 .frame-wrap img{display:block;width:100%;height:auto;max-height:320px;object-fit:cover}
 .frame-label{padding:10px;background:rgba(76,224,143,.12);color:var(--good);border-top:1px solid rgba(76,224,143,.18);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
+.frame-wrap.lose .frame-label{background:rgba(255,107,107,.12);color:var(--bad);border-top-color:rgba(255,107,107,.18)}
 .end-actions{display:flex;gap:10px;margin-top:18px}
 .retry,.stop{flex:1;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
 .stop{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.28)}
@@ -166,8 +168,8 @@ input[type=text]:focus{border-color:rgba(120,170,255,.55)}
     <div class="end-title" id="end-title">Game Over</div>
     <div class="end-msg" id="end-msg"></div>
     <div class="frame-wrap" id="frame-wrap">
-      <img id="frame-img" alt="Winning frame">
-      <div class="frame-label">Your capture</div>
+      <img id="frame-img" alt="Last frame">
+      <div class="frame-label" id="frame-label">Your capture</div>
     </div>
     <div class="end-actions">
       <button class="retry" onclick="restart()">Play again</button>
@@ -204,6 +206,7 @@ const S = {
   lastPersonPenaltyAt: 0,
   lastWinAt: 0,
   lastWinFrame: null,
+  lastLoseFrame: null,
   lastFeedback: '',
   lastSpeechAt: 0,
   lastTargetState: '',
@@ -348,16 +351,16 @@ function setPill(id, state, text) {
 
 function updateStats() {
   $('frames-stat').textContent = `Frames ${S.frames}`;
-  $('latency-stat').textContent = `${Math.max(0, Date.now() - S.t0)}ms`;
 }
 
 function captureFrame() {
   if (!cam.videoWidth || !cam.videoHeight) return null;
-  snap.width = cam.videoWidth;
-  snap.height = cam.videoHeight;
-  const ctx = snap.getContext('2d');
-  ctx.drawImage(cam, 0, 0, snap.width, snap.height);
-  return snap.toDataURL('image/jpeg', 0.72);
+  const TARGET_W = 480;
+  const scale = Math.min(1, TARGET_W / cam.videoWidth);
+  snap.width = Math.round(cam.videoWidth * scale);
+  snap.height = Math.round(cam.videoHeight * scale);
+  snap.getContext('2d').drawImage(cam, 0, 0, snap.width, snap.height);
+  return snap.toDataURL('image/jpeg', 0.65);
 }
 
 async function startGame() {
@@ -374,7 +377,7 @@ async function startGame() {
     await fetch('/reset_session', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ session_id: S.sessionId })
+      body: JSON.stringify({ session_id: S.sessionId, difficulty: S.difficulty })
     });
   } catch (_) {}
 
@@ -382,8 +385,8 @@ async function startGame() {
     S.stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: 'environment' },
-        width: { ideal: 960, max: 1280 },
-        height: { ideal: 540, max: 720 }
+        width: { ideal: 640, max: 960 },
+        height: { ideal: 360, max: 540 }
       },
       audio: false
     });
@@ -405,6 +408,7 @@ async function startGame() {
   S.lastPersonPenaltyAt = 0;
   S.lastWinAt = 0;
   S.lastWinFrame = null;
+  S.lastLoseFrame = null;
   S.lastSpeechAt = 0;
   S.t0 = Date.now();
   setLives(S.lives);
@@ -422,7 +426,12 @@ async function startGame() {
 }
 
 async function loop() {
+  let inflight = false;
   while (S.running) {
+    if (inflight) {
+      await sleep(50);
+      continue;
+    }
     const img = captureFrame();
     if (!img) {
       await sleep(120);
@@ -432,6 +441,7 @@ async function loop() {
     S.frames += 1;
     updateStats();
 
+    inflight = true;
     const start = Date.now();
     let data = null;
     try {
@@ -449,9 +459,11 @@ async function loop() {
       $('latency-stat').textContent = `${Date.now() - start}ms`;
     } catch (e) {
       showFeedback('Connection problem. Retrying.', 'warn');
+      inflight = false;
       await sleep(500);
       continue;
     }
+    inflight = false;
 
     if (!S.running) break;
     if (applyAnalysis(data)) break;
@@ -475,23 +487,31 @@ function endGame(reason = 'stopped') {
   }
 
   const secs = ((Date.now() - S.t0) / 1000).toFixed(1);
-  $('frame-wrap').style.display = reason === 'win' && S.lastWinFrame ? 'block' : 'none';
+  const fw = $('frame-wrap');
+  const fi = $('frame-img');
+  const fl = $('frame-label');
 
   if (reason === 'win') {
     $('end-title').textContent = 'Target Found';
     $('end-title').style.color = 'var(--good)';
     $('end-msg').textContent = `Captured in ${secs}s across ${S.frames} frames.`;
-    $('frame-img').src = S.lastWinFrame;
+    fw.className = 'frame-wrap';
+    fl.textContent = 'Target locked — winning frame';
+    if (S.lastWinFrame) { fi.src = S.lastWinFrame; fw.style.display = 'block'; } else { fw.style.display = 'none'; }
     audio.win();
   } else if (reason === 'lose') {
     $('end-title').textContent = 'Game Over';
     $('end-title').style.color = 'var(--bad)';
-    $('end-msg').textContent = `You got hit. Final score ${S.score}.`;
+    $('end-msg').textContent = `Person detected. Final score ${S.score}.`;
+    fw.className = 'frame-wrap lose';
+    fl.textContent = 'Person detected — fatal frame';
+    if (S.lastLoseFrame) { fi.src = S.lastLoseFrame; fw.style.display = 'block'; } else { fw.style.display = 'none'; }
     audio.fail();
   } else {
     $('end-title').textContent = 'Stopped';
     $('end-title').style.color = 'var(--accent)';
     $('end-msg').textContent = `Stopped after ${secs}s and ${S.frames} frames.`;
+    fw.style.display = 'none';
   }
 
   end.style.display = 'flex';
@@ -530,23 +550,28 @@ function applyAnalysis(a) {
 
   const now = Date.now();
   if (personFound) {
+    // Capture the frame immediately — before any await — so it reflects the moment of detection
+    const hitFrame = captureFrame();
     setPill('pill-person', 'bad', `PEOPLE: ${Math.round(personConf * 100)}%`);
     if (now - S.lastPersonPenaltyAt >= PERSON_PENALTY_COOLDOWN) {
       S.lastPersonPenaltyAt = now;
       S.lives -= 1;
       setLives(S.lives);
       audio.hit();
-      if (S.lives <= 1) {
+      if (S.lives <= 0) {
+        // Store the fatal frame before ending
+        S.lastLoseFrame = hitFrame;
+        showFeedback('Person detected. Out.', 'bad');
+        speak('Out. Person detected.');
+        endGame('lose');
+        return true;
+      } else if (S.lives <= 1) {
         showFeedback('Oof. One life left.', 'bad');
         speak('Oof. One life left.');
         audio.lowLife();
       } else {
         showFeedback(`You got hit. ${S.lives} left.`, 'warn');
         speak(`You got hit. ${S.lives} left.`);
-      }
-      if (S.lives <= 0) {
-        endGame('lose');
-        return true;
       }
     } else {
       showFeedback('Person nearby. Back up.', 'warn');
