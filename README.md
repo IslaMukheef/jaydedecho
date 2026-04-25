@@ -1,91 +1,77 @@
-# JaydeEcho
+# EchoFind — Vision Game
 
-A voice-first AI assistant for visually impaired users that helps them navigate and understand their surroundings using real-time computer vision and natural speech interaction.
+A real-time camera game for visually impaired users. 
+AI analyses your live camera feed every 1.5 seconds and tells you:
+- What's in front of you
+- Where obstacles are
+- When a person is dangerously close (game over)
+- When you've found your target (win!)
 
-## Core Features
+## Files
 
-### 1. Route Guidance
-Navigate to destinations with step-by-step directions.
-- User: *"I want to go to Oakville Place, how can I get there?"*
-- Assistant: Provides turn-by-turn guidance
-
-### 2. On-Arrival Assistance
-Detects bus/environment and identifies empty seats, helping the user orient themselves at their destination.
-
-### 3. Conversational AI
-Natural two-way dialogue, not fixed commands.
-- User: *"What's in front of me?"*
-- Assistant: Describes the scene
-- User: *"Is there a clear path to the door on my right?"*
-- Assistant: Real-time guidance with spatial awareness
-
-### 4. Game Mode
-Interactive "floor is lava" style games to make the experience engaging.
-
-### 5. Voice Output
-- ElevenLabs API for natural, empathetic text-to-speech
-- Emotional and spatial audio (urgent warnings, left/right directions)
-
-## Tech Stack
-
-### Ultra-Lean 2-Day Approach
-- **Camera Capture**: Python + OpenCV (Logitech Brio or mobile web app)
-- **Vision AI**: Google Gemini API (base64 image understanding)
-- **Voice Output**: ElevenLabs API (natural speech synthesis)
-- **Trigger**: Single keypress or button to capture → analyze → speak
-
-### Future Roadmap
-- On-device models using Gemma 4 via Ollama (privacy-first alternative to cloud APIs)
+```
+vision-game/
+├── server.py     ← Python backend (Flask + Ollama)
+├── index.html    ← Browser frontend (open this in Chrome/Firefox)
+├── setup.sh      ← One-shot installer
+└── README.md
+```
 
 ## Quick Start
 
-### Prerequisites
-- Python 3.9+
-- Gemini API key (Google Cloud)
-- ElevenLabs API key
-- Camera device (Logitech Brio, webcam, or mobile)
-
-### Setup
-
+### Step 1 — Install everything (once)
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Create environment config
-cp .env.example .env
-# Edit .env with your API keys
+chmod +x setup.sh
+./setup.sh
 ```
 
-### Run
-
+### Step 2 — Start Ollama (Terminal 1)
 ```bash
-python src/main.py
+ollama serve
 ```
 
-## Project Structure
-
+### Step 3 — Start the backend (Terminal 2)
+```bash
+python3 server.py
 ```
-jaydedecho/
-├── README.md                 # This file
-├── ARCHITECTURE.md           # Technical design & flow
-├── requirements.txt          # Python dependencies
-├── .env.example              # Environment template
-├── src/
-│   ├── main.py              # Entry point
-│   ├── camera.py            # Camera capture (OpenCV)
-│   ├── vision.py            # Gemini vision API client
-│   ├── speech.py            # ElevenLabs TTS client
-│   ├── router.py            # Route guidance logic
-│   ├── game_mode.py         # Game mode (floor is lava, etc)
-│   └── config.py            # Configuration management
-└── docs/
-    ├── API_USAGE.md         # API call patterns
-    ├── DESIGN.md            # UX design notes
-    └── FALLBACKS.md         # Offline/degraded mode strategies
+Server runs on **http://localhost:5050**
+
+### Step 4 — Open the game
+```bash
+# Chrome/Chromium (recommended for camera access):
+google-chrome index.html
+# or
+xdg-open index.html
 ```
 
-## Development Notes
+---
 
-- **Fallback Strategy**: If local models are unavailable, all vision processing uses Gemini API
-- **Presentation**: Future versions can highlight on-device Gemma 4 via Ollama for privacy
-- **Accessibility**: All interactions are audio-first (voice input/output)
+## Changing the Vision Model
+
+Edit `server.py` line:
+```python
+VISION_MODEL = "llava"   # Change to: moondream, llava-phi3, bakllava
+```
+Then pull the model:
+```bash
+ollama pull moondream   # fastest
+ollama pull llava       # best accuracy
+ollama pull llava-phi3  # balanced
+```
+
+## Game Rules
+
+| Event | Result |
+|---|---|
+| Target found with ≥70% confidence | **WIN** 🎯 |
+| Person detected very close | **LOSE** 🚨 |
+| Stop button | Game ends |
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| "Cannot connect to Ollama" | Run `ollama serve` in a terminal |
+| Camera not working | Use Chrome; allow camera in browser permissions |
+| Slow analysis | Switch to `moondream` model (faster) |
+| Server not reachable | Check firewall; make sure `python3 server.py` is running |
