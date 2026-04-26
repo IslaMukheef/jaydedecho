@@ -191,6 +191,8 @@ const end = $('end');
 const PERSON_PENALTY_COOLDOWN = 1200;
 const WIN_THRESHOLD = 0.68;
 const CLOSE_THRESHOLD = 0.52;
+const LATENCY_WARN_MS = 600;
+const LATENCY_SILENT_COOLDOWN = 3000;
 
 const S = {
   running: false,
@@ -210,6 +212,8 @@ const S = {
   lastFeedback: '',
   lastSpeechAt: 0,
   lastTargetState: '',
+  lastTargetConf: 0,
+  lastLatencyWarnAt: 0,
   tick: null,
 };
 
@@ -349,6 +353,60 @@ function setPill(id, state, text) {
   el.textContent = text;
 }
 
+function buildNavigationGuidance(analysis, lastConf) {
+  const currentConf = Number(analysis.target_confidence) || 0;
+  const confChange = currentConf - lastConf;
+  const scene = (analysis.scene_description || '').toLowerCase();
+
+  // PRIORITY 1: Check for people/person in scene - DANGER WARNING
+  if (scene.includes('person') || scene.includes('people') || scene.includes('standing') || scene.includes('human')) {
+    return { guidance: 'Person ahead. Run. Go back.', kind: 'bad', priority: 100 };
+  }
+
+  // PRIORITY 2: Check for obstacles and suggest direction
+  if (scene.includes('blocked') || scene.includes('wall') || scene.includes('obstacle')) {
+    if (scene.includes('left')) {
+      return { guidance: 'Blocked. Move right slowly.', kind: 'warn', priority: 90 };
+    } else if (scene.includes('right')) {
+      return { guidance: 'Blocked. Move left slowly.', kind: 'warn', priority: 90 };
+    } else {
+      return { guidance: 'Blocked ahead. Turn around.', kind: 'warn', priority: 90 };
+    }
+  }
+
+  // PRIORITY 3: Clear path - encourage forward movement
+  if (scene.includes('clear') || scene.includes('open') || scene.includes('path')) {
+    if (currentConf > 0.1) {
+      return { guidance: 'Clear ahead. Move forward toward target.', kind: 'good', priority: 50 };
+    } else {
+      return { guidance: 'Clear path. Move forward.', kind: 'normal', priority: 50 };
+    }
+  }
+
+  // PRIORITY 4: Target-based guidance (when target found)
+  if (currentConf > 0.25 && currentConf < 0.65) {
+    if (confChange > 0.03) {
+      return { guidance: 'Good direction. Keep forward.', kind: 'good', priority: 40 };
+    } else if (confChange < -0.03) {
+      return { guidance: 'Wrong way. Turn back.', kind: 'warn', priority: 40 };
+    } else {
+      return { guidance: 'Hold steady. Small steps.', kind: 'normal', priority: 40 };
+    }
+  }
+
+  // PRIORITY 5: Very close to winning
+  if (currentConf >= 0.65 && currentConf < 0.95) {
+    if (confChange > 0.02) {
+      return { guidance: 'Almost there. Keep going.', kind: 'good', priority: 40 };
+    } else {
+      return { guidance: 'Too far now. Come closer.', kind: 'warn', priority: 40 };
+    }
+  }
+
+  return null;
+}
+
+
 function updateStats() {
   $('frames-stat').textContent = `Frames ${S.frames}`;
 }
@@ -410,6 +468,8 @@ async function startGame() {
   S.lastWinFrame = null;
   S.lastLoseFrame = null;
   S.lastSpeechAt = 0;
+  S.lastTargetConf = 0;
+  S.lastLatencyWarnAt = 0;
   S.t0 = Date.now();
   setLives(S.lives);
   $('target-tag').textContent = target.toUpperCase();
@@ -456,7 +516,18 @@ async function loop() {
         })
       });
       data = await r.json();
-      $('latency-stat').textContent = `${Date.now() - start}ms`;
+      const latency = Date.now() - start;
+      $('latency-stat').textContent = `${latency}ms`;
+
+      // Latency warning: suggest slowing down if lag is detected
+      if (latency > LATENCY_WARN_MS) {
+        const now = Date.now();
+        if (now - S.lastLatencyWarnAt > LATENCY_SILENT_COOLDOWN) {
+          S.lastLatencyWarnAt = now;
+          showFeedback('Camera lag detected. Slow down.', 'warn');
+          // No speak() call to avoid audio spam
+        }
+      }
     } catch (e) {
       showFeedback('Connection problem. Retrying.', 'warn');
       inflight = false;
@@ -549,6 +620,18 @@ function applyAnalysis(a) {
   showScene(scene);
 
   const now = Date.now();
+
+  // CONTINUOUS NAVIGATION GUIDANCE (based on scene description + target detection)
+  const navGuidance = buildNavigationGuidance(a, S.lastTargetConf);
+  if (navGuidance) {
+    showFeedback(navGuidance.guidance, navGuidance.kind);
+    // Speak guidance occasionally (not every frame, respect cooldown)
+    if (now - S.lastSpeechAt >= 1000) {
+      speak(navGuidance.guidance);
+    }
+  }
+  S.lastTargetConf = targetConf;
+
   if (personFound) {
     // Capture the frame immediately — before any await — so it reflects the moment of detection
     const hitFrame = captureFrame();
@@ -582,27 +665,12 @@ function applyAnalysis(a) {
     setPill('pill-person', '', 'PEOPLE: CLEAR');
   }
 
+  // Update target pill based on current detection
   if (targetFound) {
     const pct = Math.round(targetConf * 100);
     setPill('pill-target', targetConf >= CLOSE_THRESHOLD ? 'ok' : 'warn', `TARGET: ${pct}%`);
-    if (targetConf >= CLOSE_THRESHOLD) {
-      showFeedback('Target visible. Close in.', 'good');
-      if (S.lastTargetState !== 'close') {
-        audio.near();
-        speak('Target locked. Keep pushing.');
-      }
-      S.lastTargetState = 'close';
-    } else {
-      showFeedback('Target seen. Keep moving.', 'normal');
-      if (S.lastTargetState !== 'seen') {
-        audio.near();
-      }
-      S.lastTargetState = 'seen';
-    }
   } else {
     setPill('pill-target', '', 'TARGET: SEARCHING');
-    showFeedback('Scanning for target.', 'normal');
-    S.lastTargetState = 'none';
   }
 
   if (targetFound && targetConf >= WIN_THRESHOLD && now - S.lastWinAt > 1200) {
