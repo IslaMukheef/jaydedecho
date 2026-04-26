@@ -1,143 +1,103 @@
-# EchoFind — Vision Game
+# JaydedEcho — Vision Guide Game
 
-A real-time camera game for visually impaired users. 
-AI analyses your live camera feed and tells you:
-- What's in front of you
-- Where obstacles are
-- When a person is dangerously close (game over)
-- When you've found your target (win!)
+Named after Jayde (https://github.com/JaydedCompanion)
+DevPost (https://devpost.com/software/jaydedecho)
 
-## Files
+A real-time browser vision game and accessibility experiment that guides a blind player using an "echo" voice assistant inspired by Jayde. It helps you find items, avoid people, and navigate — but beware: Jayde hates people, and seeing too many will end the game.
 
-```
-vision-game/
-├── server.py     ← Python backend (Flask + Ollama)
-├── index.html    ← Browser frontend (open this in Chrome/Firefox)
-├── setup.sh      ← One-shot installer
-└── README.md
-```
+Inspiration
 
-## Quick Start
+I was supposed to attend a hackathon with my friend Jayde. They didn't get in, so this was built as a playful tribute: the echo of Jayde guiding a player through social interactions and lost-item hunts. No AI replaces them — this is for fun and homage.
 
-### Step 1 — Install everything (once)
+What it does
+
+- The user names a target item to find.
+- The browser streams camera frames to a Python backend.
+- Backend queries an on‑device Ollama/LLaVA vision model to analyze each frame.
+- The assistant reports: target presence, people detection (danger), scene description, and movement hints.
+- Game rules: finding the target wins; seeing too many people (configurable) triggers loss.
+
+How we built it
+
+- Backend: Flask (server.py) that queries Ollama via HTTP
+- Frontend: index.html for camera capture, encoding frames and playing TTS
+- Models: Ollama-hosted vision models (llava, moondream, etc.)
+- Optimizations: motion detection, reduced resolution, smart frame skipping, async speech
+
+Key features & improvements
+
+- Real-time object classification using local Ollama models
+- Session-based consensus smoothing to reduce flicker/false positives
+- Multiple difficulty rules to tune sensitivity and win/lose thresholds
+- Latency optimizations (lower resolution, frame skipping, async audio)
+
+Quick start
+
+1) Install (one-time):
+
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
-### Step 2 — Start Ollama (Terminal 1)
+2) Start Ollama (Terminal 1):
+
 ```bash
 ollama serve
 ```
 
-### Step 3 — Start the backend (Terminal 2)
+3) Start the backend (Terminal 2):
+
 ```bash
 python3 server.py
 ```
-Server runs on **http://localhost:5050**
 
-### Step 4 — Open the game
+4) Open the game in Chrome/Chromium (for camera access):
+
 ```bash
-# Chrome/Chromium (recommended for camera access):
-google-chrome index.html
-# or
 xdg-open index.html
 ```
 
----
+Configuration
 
-## Changing the Vision Model
+- server.py environment variables:
+  - OLLAMA_URL (default: http://localhost:11434/api/generate)
+  - VISION_MODEL (default: llava)
+  - HTTPS_PORT, CERT_FILE, KEY_FILE
+- Change VISION_MODEL and pull the model with `ollama pull <model>` to try different tradeoffs.
 
-Edit `server.py` line:
-```python
-VISION_MODEL = "llava"   # Change to: moondream, llava-phi3, bakllava
+Challenges we ran into
+
+Streaming low-latency video and getting timely model responses was the hardest part. Solutions included lowering image quality, skipping redundant frames, and using confidence‑based consensus logic. Many hours of testing and tuning went into the final settings.
+
+Accomplishments
+
+- Implemented near real-time vision analysis with practical latency
+- Built robust heuristics to avoid noisy detections and reduce false positives
+- Made the game playable on modest hardware using local models
+
+What we learned
+
+Players rarely notice reduced image quality if it isn't mentioned — trading a bit of fidelity for speed works well.
+
+What's next
+
+- VR mode with occlusion so players can't see but are kept safe
+- Collectible hearts to refill health and extend play
+- Better model switching and on-device acceleration support
+
+Files
+
 ```
-Then pull the model:
-```bash
-ollama pull moondream   # fastest (⭐ RECOMMENDED for latency)
-ollama pull llava       # best accuracy
-ollama pull llava-phi3  # balanced
+├── server.py     ← Python backend (Flask + Ollama)
+├── index.html    ← Browser frontend (camera, audio, UI)
+├── setup.sh      ← One-shot installer
+├── cert.pem/key.pem ← self-signed certs (auto-generated if missing)
+└── README.md
 ```
 
-## Game Rules
+License & credits
 
-| Event | Result |
-|---|---|
-| Get target confidence to 85%+ (bring close to camera) | **WIN** 🎯 |
-| Person detected very close | **LOSE** 🚨 |
-| Stop button | Game ends |
+Named for Jayde — thanks to https://github.com/JaydedCompanion for inspiration.
 
-## Latency Optimizations ⚡
-
-The game now includes multiple optimizations to minimize latency while maintaining quality:
-
-### 1. **Async Speech** ✅
-- Voice feedback plays in background without blocking gameplay
-- **Removed ~0-9 seconds of wait time** per frame
-- Players see visual feedback immediately while narration plays
-
-### 2. **Motion Detection** ✅
-- Skips redundant frames when scene hasn't changed
-- Only sends to AI when significant motion detected
-- Reduces unnecessary network requests
-
-### 3. **Optimized Resolution** ✅
-- Reduced camera resolution from 1280x720 to 960x540
-- Maintains object detection quality
-- Faster JPEG encoding and transfer
-
-### 4. **Faster Frame Timing** ✅
-- Reduced hold-still time from 400ms to 300ms
-- Reduced inter-frame delay from 500ms to 300ms
-- Quicker error retry (1500ms instead of 2000ms)
-
-### 5. **Smart Frame Skipping** ✅
-- If no significant motion, waits only 200ms before trying next frame
-- Dramatically reduces redundant processing
-
-### Performance Impact
-
-**Before optimizations:**
-- Average latency: 3-5s per frame (400ms hold + AI response + speech wait)
-- Redundant frames: ~40% analyzed unnecessarily
-
-**After optimizations:**
-- Average latency: 1-3s per frame (300ms hold + AI response)
-- **~50% faster** with improved responsiveness
-- Better gameplay experience with instant visual feedback
-
-## Recommended Settings for Best Performance
-
-### For Maximum Speed (Moondream Model)
-```bash
-ollama pull moondream
-# Then edit server.py: VISION_MODEL = "moondream"
-```
-**Latency:** 0.5-1.5s per frame  
-**Accuracy:** Good for most objects
-
-### For Best Quality (Llava Model)
-```bash
-ollama pull llava
-# Then edit server.py: VISION_MODEL = "llava"
-```
-**Latency:** 1.5-3s per frame  
-**Accuracy:** Excellent
-
-### For Balanced Experience (Llava-Phi3)
-```bash
-ollama pull llava-phi3
-# Then edit server.py: VISION_MODEL = "llava-phi3"
-```
-**Latency:** 0.8-2s per frame  
-**Accuracy:** Very good
-
-## Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| Slow responses | Use `moondream` model (faster) |
-| "Cannot connect to Ollama" | Run `ollama serve` in a terminal |
-| Camera not working | Use Chrome; allow camera in browser permissions |
-| High latency | Reduce resolution in browser, use faster model |
-| Server not reachable | Check firewall; make sure `python3 server.py` is running |
+If you'd like any wording changed or want additional badges/installation notes, say the word and adjustments will be made.
