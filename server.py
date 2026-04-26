@@ -39,6 +39,10 @@ class FrameResult:
     person_detected: bool
     person_confidence: float
     scene_description: str
+    target_position: str = "none"
+    target_distance: str = "none"
+    movement_hint: str = "none"
+    hint_confidence: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -294,38 +298,43 @@ def parse_model_output(raw_response: str) -> dict:
         "person_detected": bool(obj.get("person_detected", False)),
         "person_confidence": normalize_confidence(obj.get("person_confidence", 0.0)),
         "scene_description": compact_words(clean_text(obj.get("scene_description", ""), 120), 6),
+        "target_position": str(obj.get("target_position", "none")).lower() or "none",
+        "target_distance": str(obj.get("target_distance", "none")).lower() or "none",
+        "movement_hint": str(obj.get("movement_hint", "none")).lower() or "none",
+        "hint_confidence": normalize_confidence(obj.get("hint_confidence", 0.0)),
     }
 
 
 def build_prompt(target: str) -> str:
     safe_target = normalize_target(target)
     return f"""
-You are a strict vision classifier for a browser camera game.
+You are a navigation guide for a visually impaired person using a camera. Your job is to describe what's in front of them.
 
-Only inspect the visible image.
+Analyze the visible scene and decide:
+1) Is the target object "{safe_target}" visible? (for game goal)
+2) Are any people or persons visible? (safety warning)
+3) What's directly in front of them? (for navigation)
 
-Decide only these two things:
-1) whether the visible scene contains the target object: "{safe_target}"
-2) whether any visible person is present
+SCENE DESCRIPTION RULES (this is critical):
+- Describe ONLY what's directly ahead that affects movement
+- Be specific: "clear path ahead", "wall blocking", "person standing here", "obstacle left side"
+- Include: obstacles, people, walls, clear areas, things blocking the path
+- Use action words: "blocked", "clear", "person", "obstacle", "wall"
+- Keep it 4-6 words, factual, no fluff
 
-Rules:
-- Only report what is directly visible.
-- Do NOT guess, infer, or hallucinate.
-- Use low confidence when unsure.
-- If the target is not clearly visible, set target_found=false.
-- If no person is clearly visible, set person_detected=false.
-- Ignore context clues, labels, reflections, photos, drawings, shadows, or text.
-- If the target is partially visible, still stay conservative.
-- Scene description must be short, factual, and 4 to 6 words maximum.
-- Return JSON only. No markdown. No extra text.
+Example descriptions:
+- "Clear path forward and right" (good)
+- "Person standing in path ahead" (good)
+- "Wall left side, clear right" (good)
+- "Obstacle blocking center area" (good)
 
-Return exactly:
+Return JSON only:
 {{
   "target_found": false,
   "target_confidence": 0.0,
   "person_detected": false,
   "person_confidence": 0.0,
-  "scene_description": "short factual phrase"
+  "scene_description": "what affects their movement"
 }}
 """.strip()
 
@@ -394,6 +403,10 @@ def analyse():
         person_detected=bool(analysis["person_detected"]),
         person_confidence=clamp01(analysis["person_confidence"]),
         scene_description=str(analysis["scene_description"]),
+        target_position=str(analysis.get("target_position", "none")),
+        target_distance=str(analysis.get("target_distance", "none")),
+        movement_hint=str(analysis.get("movement_hint", "none")),
+        hint_confidence=clamp01(analysis.get("hint_confidence", 0.0)),
     )
 
     with lock:
@@ -411,6 +424,10 @@ def analyse():
         "person_detected": bool(consensus.person_detected),
         "person_confidence": round(consensus.person_confidence, 3),
         "scene_description": analysis["scene_description"],
+        "target_position": analysis.get("target_position", "none"),
+        "target_distance": analysis.get("target_distance", "none"),
+        "movement_hint": analysis.get("movement_hint", "none"),
+        "hint_confidence": round(analysis.get("hint_confidence", 0.0), 2),
         "difficulty": difficulty,
     })
 
